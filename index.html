@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a0812">
+<title>Drunk: the game</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a late-night arcade cabinet, a little sad, a little funny.
+   IDEA: a 16-bit handheld: on a phone it is held sideways, pad left, A button right; on a computer it is a cabinet screen.
+   PICTURE: the game screen itself, pixel-perfect, as large as the device allows.
+   COLOUR and TYPE: ink-black housing, cream text, whiskey amber and neon pink; Press Start 2P + VT323.
+   LAYOUT: landing picks phone or computer; phones play landscape with controls on both sides. */
+:root{color-scheme:dark;--bg:#0a0812;--panel:#16122a;--ink:#f2ead8;--dim:#a9a2c2;--amber:#ffc24a;--pink:#ff6a9a;--line:#3a3456}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:'VT323',monospace;overflow:hidden;touch-action:manipulation;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+button,input{font:inherit}
+.ps{font-family:'Press Start 2P',monospace}
+#app{position:fixed;inset:0;display:grid;grid-template-areas:"s";place-content:center;place-items:center;gap:10px;
+  padding:max(8px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+#screen{--s:2;grid-area:s;position:relative;background:#000;border:4px solid #000;outline:4px solid var(--line);overflow:hidden}
+.pad{display:none;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:none}
+#padL{grid-area:l}#padR{grid-area:r;flex-direction:column;gap:14px}
+body.phone .pad{display:flex}
+body.phone #app{grid-template-areas:"s s" "l r";gap:14px}
+@media(orientation:landscape){body.phone #app{grid-template-areas:"l s r";gap:clamp(8px,2vw,22px)}}
+#stick{position:relative;width:136px;height:136px;border-radius:50%;background:radial-gradient(circle,#241e3a 0 55%,#1a1530 56%);border:4px solid #000;box-shadow:inset 0 3px 0 rgba(255,255,255,.08),0 0 0 3px var(--line);touch-action:none}
+#stick i{position:absolute;color:var(--dim);font-style:normal;font-family:'Press Start 2P',monospace;font-size:11px}
+#knob{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:#3a3456;border:4px solid #000;box-shadow:inset 0 4px 0 rgba(255,255,255,.18)}
+#aBtn{width:88px;height:88px;border-radius:50%;background:var(--pink);color:#0f0d1a;border:4px solid #000;box-shadow:inset 0 5px 0 #ffc0d4,inset 0 -5px 0 #b03a60,0 0 0 3px var(--line);font-family:'Press Start 2P',monospace;font-size:16px;touch-action:none}
+#aBtn:active,#aBtn.down{transform:translateY(2px);box-shadow:inset 0 2px 0 #ffc0d4,0 0 0 3px var(--line)}
+.padlab{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--dim);text-align:center;line-height:1.6}
+#hud{display:flex;align-items:center;gap:7px;height:40px;padding:0 8px;background:var(--panel);border-bottom:4px solid #000;box-shadow:inset 0 2px 0 #2e2850;white-space:nowrap}
+#hud .lab{font-family:'Press Start 2P',monospace;font-size:7px}
+.meter{display:flex;gap:2px}.meter i{width:10px;height:10px;border:2px solid #000;background:#2a2440}
+.meter.c i.on{background:#f0a73a;box-shadow:inset 0 2px 0 #ffd890}.meter.b i.on{background:#e0567a;box-shadow:inset 0 2px 0 #ffb0c8}
+#clock{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--amber);padding:4px 5px;background:#000;border:2px solid var(--line)}
+#clock.low{color:var(--pink);border-color:var(--pink)}
+#loc{margin-left:auto;font-family:'Press Start 2P',monospace;font-size:7px;overflow:hidden;text-overflow:ellipsis}
+#keyico{display:none;font-family:'Press Start 2P',monospace;font-size:7px;color:#0f0d1a;background:var(--amber);padding:4px 5px;border:2px solid #000}
+.hbtn{height:30px;padding:0 7px;border:2px solid #000;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;color:#0f0d1a}
+#listenBtn{background:var(--pink);box-shadow:inset 0 2px 0 #ffc0d4}#soundBtn{background:#2a2244;color:var(--ink)}
+canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
+.ov{position:absolute;left:0;right:0;bottom:0;top:44px;display:none}
+.box{background:var(--panel);border:4px solid var(--ink);box-shadow:0 0 0 4px #000,6px 6px 0 4px #000}
+#dlg{position:absolute;left:8px;right:8px;bottom:8px;padding:calc(6px + 3px*var(--s)) calc(8px + 3px*var(--s));display:none;font-size:calc(11px + 4.6px*var(--s));line-height:1.05;max-height:calc(100% - 16px);overflow:auto}
+#dlg .who{font-family:'Press Start 2P',monospace;font-size:calc(6px + 1.5px*var(--s));color:var(--amber);margin-bottom:6px}
+#dlg .ly{color:#ffb0c8;font-style:italic}
+.attr{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--dim);margin-top:6px;line-height:1.6;font-style:normal}
+#fade .fly{display:block;margin-top:14px;color:#ffb0c8}
+#fade .fattr{display:block;margin-top:12px;font-size:7px;color:var(--dim)}
+#toast{position:absolute;right:8px;top:50px;max-width:250px;padding:8px 10px;background:var(--pink);color:#0f0d1a;border:3px solid #000;box-shadow:4px 4px 0 #000;font-family:'Press Start 2P',monospace;font-size:8px;line-height:1.6;cursor:pointer;display:none}
+@keyframes pulse{50%{transform:scale(1.15)}}
+#listenBtn.pulse{animation:pulse .5s 6}
+#dlg .more{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--dim);text-align:right;margin-top:6px}
+.choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.btn{min-height:40px;padding:0 12px;background:#2a2244;color:var(--ink);border:3px solid #000;box-shadow:inset 0 3px 0 rgba(255,255,255,.15);font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.4}
+.btn:focus-visible,.hbtn:focus-visible,.opt:focus-visible,.pick:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.btn.hot{background:var(--amber);color:#0f0d1a;box-shadow:inset 0 3px 0 #fff0b0,inset 0 -4px 0 #c0601a}
+.btn.pink{background:var(--pink);color:#0f0d1a}
+#hint{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);padding:6px 8px;background:rgba(10,8,18,.85);border:2px solid var(--line);font-family:'Press Start 2P',monospace;font-size:8px;color:var(--amber);white-space:nowrap;display:none}
+#fade{flex-direction:column;white-space:pre-line;position:absolute;inset:44px 0 0 0;background:#000;opacity:0;pointer-events:none;transition:opacity .6s;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Press Start 2P',monospace;font-size:calc(8px + 1.6px*var(--s));line-height:1.8;color:var(--pink);padding:16px}
+#title{background:#0a0812;inset:0;top:0}
+#title img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated}
+#title .wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding-top:5%;gap:4px;text-align:center}
+#title h1{margin:0;font-family:'Press Start 2P',monospace;font-size:calc(18px + 17px*var(--s));color:var(--amber);text-shadow:0 5px 0 #c0601a,0 10px 0 #5a2410,5px 13px 0 #000}
+#title .sub{font-family:'Press Start 2P',monospace;font-size:calc(5px + 2.6px*var(--s));text-shadow:2px 2px 0 #000;margin-top:8px}
+#title .sub2{font-size:calc(12px + 6px*var(--s));color:#ffb0c8;text-shadow:2px 2px 0 #000}
+#title .menu{position:absolute;left:3%;bottom:4%;display:flex;flex-direction:column;gap:6px;padding:10px;background:rgba(10,8,18,.82)}
+#creator{background:var(--bg);overflow:auto;padding:10px}
+#creator .cols{display:flex;gap:12px;flex-wrap:wrap}
+#creator .prev{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px;background:var(--panel);border:4px solid #000;outline:3px solid var(--line)}
+#creator .opts{flex:1 1 280px;display:flex;flex-direction:column;gap:6px}
+#creator h2{margin:0 0 4px;font-family:'Press Start 2P',monospace;font-size:12px;color:var(--amber)}
+.row{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.row .lab{width:100%;font-family:'Press Start 2P',monospace;font-size:8px;color:var(--dim)}
+.opt{min-height:34px;padding:0 8px;background:#2a2244;color:var(--ink);border:3px solid #000;font-size:18px;cursor:pointer}
+.opt.on{background:var(--amber);color:#0f0d1a}
+.sw{width:34px;height:34px;padding:0;border:3px solid #000;cursor:pointer;box-shadow:inset 0 3px 0 rgba(255,255,255,.3)}
+.sw.on{border-color:var(--amber)}
+#eli{border-color:var(--pink);color:var(--pink);background:#2a2244}#eli.on{background:var(--pink);color:#0f0d1a}
+#listen,#help{z-index:6}
+#listen,#spell,#final,#help{background:rgba(10,8,18,.8);align-items:center;justify-content:center;padding:10px}
+.pop{width:min(440px,100%);padding:14px;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto}
+.pop h3{margin:0;font-family:'Press Start 2P',monospace;font-size:12px;color:var(--amber);line-height:1.5}
+.note{padding:10px;background:var(--pink);color:#0f0d1a;border:2px solid #000;font-family:'Press Start 2P',monospace;font-size:10px;line-height:1.6;text-align:center}
+.plat{display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 12px;background:#000;border:2px solid var(--line);color:var(--ink);text-decoration:none;font-family:'Press Start 2P',monospace;font-size:10px}
+.plat span{font-family:'VT323',monospace;font-size:19px;color:var(--dim)}
+.plat:hover{border-color:var(--amber)}
+#spell .pop img{width:100%;max-height:calc(60px + 40px*var(--s));object-fit:cover;image-rendering:pixelated;border:2px solid #000}
+#spellIn{height:46px;padding:0 10px;background:#000;border:3px solid var(--line);color:var(--ink);font-size:22px;width:100%}
+#final .pop{width:min(900px,100%);flex-direction:row;flex-wrap:wrap;align-items:flex-start}
+#final .card{flex:1 1 220px;max-width:340px;display:flex;flex-direction:column;gap:6px}
+#final .card img{width:100%;border:3px solid #000;image-rendering:pixelated;-webkit-touch-callout:default;user-select:auto}
+#final .info{flex:1 1 260px;display:flex;flex-direction:column;gap:9px}
+#final .stats{display:flex;gap:10px;flex-wrap:wrap}
+#final .stat{flex:1 1 90px;padding:8px;background:#000;border:2px solid var(--line);font-family:'Press Start 2P',monospace;font-size:8px;color:var(--dim);line-height:1.8}
+#final .stat b{display:block;font-size:16px;color:var(--amber);font-weight:400}
+.shares{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:6px}
+.shares .btn{min-height:40px;font-size:8px;padding:0 6px}
+.tip{font-size:19px;line-height:1.05;color:var(--dim)}
+/* landing + rotate */
+.full{position:fixed;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;background:#0a0812}
+#landing{display:flex;background:linear-gradient(rgba(10,8,18,.55),rgba(10,8,18,.88)),url(img/title.png) center/cover;image-rendering:pixelated}
+#landing h1{margin:0;font-family:'Press Start 2P',monospace;font-size:clamp(40px,11vw,84px);color:var(--amber);text-shadow:0 5px 0 #c0601a,0 10px 0 #5a2410,5px 13px 0 #000}
+#landing .q{font-family:'Press Start 2P',monospace;font-size:clamp(10px,2.4vw,14px);line-height:1.6}
+.picks{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;width:min(640px,100%)}
+.pick{flex:1 1 220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;background:var(--panel);color:var(--ink);border:4px solid var(--ink);box-shadow:0 0 0 4px #000,6px 6px 0 4px #000;cursor:pointer}
+.pick>div{display:flex;flex-direction:column;align-items:inherit;gap:8px}
+.pick b{font-family:'Press Start 2P',monospace;font-size:12px;font-weight:400;color:var(--amber)}
+.pick span{font-size:20px;line-height:1.05;color:var(--dim)}
+.pick.rec{border-color:var(--pink)}
+.pick em{font-style:normal;font-family:'Press Start 2P',monospace;font-size:7px;color:#0f0d1a;background:var(--pink);padding:4px 6px}
+.ico{display:block;image-rendering:pixelated}
+#rotate .ph{width:60px;height:100px;border:6px solid var(--ink);border-radius:8px;position:relative;animation:turn 2.4s ease-in-out infinite}
+#rotate .ph::after{content:"";position:absolute;left:50%;bottom:6px;width:10px;height:4px;margin-left:-5px;background:var(--ink)}
+@keyframes turn{0%,25%{transform:rotate(0)}55%,100%{transform:rotate(-90deg)}}
+@media(orientation:portrait){body.phone:not(.upright) #rotate{display:flex}}
+.pick{position:relative}.pick em{position:absolute;top:-12px;left:50%;transform:translateX(-50%);white-space:nowrap}
+@media(max-height:520px){#landing{gap:10px;padding:14px}#landing h1{font-size:38px}#landing .tip{display:none}.picks{width:min(780px,100%)}
+  .pick{flex-direction:row;text-align:left;padding:12px 14px;gap:12px}.pick .ico{flex:0 0 auto}.pick span{font-size:17px}.pick>div{display:flex;flex-direction:column;gap:6px}}
+body.phone #creator,body.phone #listen,body.phone #spell,body.phone #final,body.phone #help{position:fixed;inset:0;z-index:15;
+  padding:max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
+body.phone #final{background:rgba(10,8,18,.97)}body.phone #creator{background:var(--bg)}
+body.phone #listen,body.phone #help{z-index:16}
+@media(orientation:landscape){body.phone #final .card{max-width:300px}body.phone #final .pop{max-height:100%}}
+@media(prefers-reduced-motion:reduce){#fade{transition:none}#listenBtn.pulse{animation:none;outline:3px solid var(--amber)}#rotate .ph{animation:none;transform:rotate(-90deg)}}
+</style>
+</head>
+<body>
+<div id="landing" class="full" role="dialog" aria-label="Choose how you are playing">
+<div class="ps" style="font-size:9px;color:#c8c0e0">A RUCKUS AND REASON STUDIOS GAME</div>
+<h1>DRUNK</h1>
+<div class="q">HOW ARE YOU PLAYING TONIGHT?</div>
+<div class="picks">
+<button class="pick" id="pickPhone"><svg class="ico" width="72" height="44" viewBox="0 0 18 11" shape-rendering="crispEdges" aria-hidden="true"><rect x="0" y="0" width="18" height="11" fill="#f2ead8"/><rect x="1" y="1" width="16" height="9" fill="#0a0812"/><rect x="3" y="3" width="2" height="5" fill="#a9a2c2"/><rect x="2" y="4" width="4" height="3" fill="#a9a2c2"/><rect x="6" y="2" width="6" height="7" fill="#3a3456"/><rect x="13" y="4" width="3" height="3" fill="#ff6a9a"/></svg><div><b>ON MY PHONE</b><span>Turn it sideways. Pad on the left, A button on the right.</span></div></button>
+<button class="pick" id="pickDesk"><svg class="ico" width="72" height="44" viewBox="0 0 18 11" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="0" width="14" height="8" fill="#f2ead8"/><rect x="3" y="1" width="12" height="6" fill="#3a3456"/><rect x="7" y="8" width="4" height="1" fill="#a9a2c2"/><rect x="0" y="9" width="18" height="2" fill="#a9a2c2"/></svg><div><b>ON A COMPUTER</b><span>Arrow keys or WASD to move. Space to interact.</span></div></button>
+</div>
+<div class="tip" style="max-width:520px">Sound on. The soundtrack is an 8-bit version of "Drunk".</div>
+</div>
+<div id="rotate" class="full" role="dialog" aria-label="Turn your phone sideways">
+<div class="ph" aria-hidden="true"></div>
+<div class="ps" style="font-size:13px;line-height:1.7;color:var(--amber)">TURN YOUR PHONE SIDEWAYS</div>
+<div class="tip" style="max-width:320px">Drunk plays best held like a handheld. If rotation is locked, open Control Center and turn it off.</div>
+<button class="btn" id="uprightBtn">PLAY UPRIGHT INSTEAD</button>
+</div>
+<div id="app">
+<div id="padL" class="pad"><div id="stick" aria-label="Movement pad"><i style="left:50%;top:8px;transform:translateX(-50%)">&#9650;</i><i style="left:50%;bottom:8px;transform:translateX(-50%)">&#9660;</i><i style="left:9px;top:50%;transform:translateY(-50%)">&#9664;</i><i style="right:9px;top:50%;transform:translateY(-50%)">&#9654;</i><div id="knob"></div></div></div>
+<div id="screen">
+<div id="hud">
+<span class="lab" style="color:#f0a73a">COURAGE</span><div class="meter c" id="mC"></div>
+<span class="lab" style="color:#ff6a9a;margin-left:3px">BUZZ</span><div class="meter b" id="mB"></div>
+<span id="clock" aria-label="Time left">6:00</span>
+<span id="keyico">KEY</span>
+<span id="loc">HOME</span>
+<button class="hbtn" id="soundBtn" aria-label="Toggle sound">SOUND ON</button>
+<button class="hbtn" id="listenBtn">LISTEN</button>
+</div>
+<canvas id="cv" width="296" height="248" aria-label="Game screen"></canvas>
+<div id="hint"></div>
+<div id="dlg" class="box" role="dialog" aria-live="polite"></div>
+<div id="fade"></div>
+<button id="toast">STUCK? THE ANSWER IS IN THE LYRICS. TAP LISTEN.</button>
+
+<div id="title" class="ov" style="top:0">
+<img src="img/title.png" alt="">
+<div class="wrap">
+<div class="ps" style="font-size:calc(5px + 2px*var(--s));color:#c8c0e0;text-shadow:2px 2px 0 #000">A RUCKUS AND REASON STUDIOS GAME</div>
+<h1>DRUNK</h1>
+<div class="sub">A GAME ABOUT ELI LIE'S SINGLE</div>
+<div class="sub2">and maybe also your life?</div>
+<div class="menu box">
+<button class="btn hot" id="newBtn">NEW LIFE</button>
+<button class="btn" id="howBtn">HOW TO PLAY</button>
+<button class="btn pink" id="tListen">LISTEN</button>
+</div>
+</div>
+</div>
+
+<div id="creator" class="ov">
+<div class="cols">
+<div class="prev">
+<div class="ps" style="font-size:9px;color:var(--amber)">WHO ARE YOU?</div>
+<canvas id="pv" width="18" height="28" style="width:108px;height:168px;background:linear-gradient(#3a2e5c 70%,#6b4226 70%)"></canvas>
+<button class="btn" id="eli">PLAY AS ELI LIE</button>
+<button class="btn" id="rndBtn" style="width:100%">RANDOMIZE</button>
+<button class="btn hot" id="startBtn" style="width:100%">START LIFE</button>
+</div>
+<div class="opts">
+<h2>CREATE YOUR CHARACTER</h2>
+<div class="row" id="rSkin"><span class="lab">SKIN</span></div>
+<div class="row" id="rHair"><span class="lab">HAIR</span></div>
+<div class="row" id="rHc"><span class="lab">HAIR COLOR</span></div>
+<div class="row" id="rOut"><span class="lab">OUTFIT</span></div>
+<div class="row" id="rFace"><span class="lab">FACIAL HAIR</span></div>
+<div class="row" id="rHat"><span class="lab">HAT</span></div>
+</div>
+</div>
+</div>
+
+<div id="listen" class="ov" role="dialog" aria-label="Listen to Drunk">
+<div class="pop box">
+<div style="display:flex;justify-content:space-between;align-items:center"><h3>LISTEN TO "DRUNK"</h3><button class="btn" id="lClose" aria-label="Close">X</button></div>
+<div class="note">THE ANSWER IS IN THE LYRICS.</div>
+<div id="plats" style="display:flex;flex-direction:column;gap:8px"></div>
+<div style="text-align:center;color:var(--dim);font-size:19px">Opens outside the game. Your night (and the clock) stays paused.</div>
+</div>
+</div>
+
+<div id="spell" class="ov" role="dialog" aria-label="The box of memories">
+<div class="pop box">
+<img src="img/memorybox.png" alt="An open box of memories with shadows rising out of it">
+<label for="spellIn" class="ps" style="font-size:10px;color:var(--amber);line-height:1.6">WHAT TO DO WITH THESE SHADOWS?</label>
+<div style="display:flex;gap:8px"><input id="spellIn" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" placeholder="Type your spell"><button class="btn hot" id="castBtn">CAST</button></div>
+<div id="spellMsg" style="font-size:20px;color:var(--dim)">Type the words. Press CAST or Enter.</div>
+<div class="row"><button class="btn pink" id="sListen" style="display:none">THE ANSWER IS IN THE LYRICS</button><button class="btn" id="sClose">STEP AWAY</button></div>
+</div>
+</div>
+
+<div id="final" class="ov" role="dialog" aria-label="Your night is over">
+<div class="pop box">
+<div class="card">
+<img id="cardImg" alt="Your shareable Drunk result card">
+<div class="tip" id="saveTip">Press and hold the picture to save it to your photos.</div>
+</div>
+<div class="info">
+<h3 id="fTitle" style="font-size:15px">LAST CALL.</h3>
+<div id="fBody" style="font-size:22px;line-height:1.05"></div>
+<div class="stats"><div class="stat">TIME<b id="fTime">6:00</b></div><div class="stat">DRINKS<b id="fDrinks">0</b></div></div>
+<div class="row"><button class="btn hot" id="shareBtn">SHARE PICTURE</button><button class="btn" id="saveBtn">SAVE PICTURE</button><button class="btn" id="copyBtn">COPY LINK</button></div>
+<div class="shares" id="shares"></div>
+<div class="tip">Instagram, TikTok and Snapchat don't take links from websites: save the picture, then post it from the app.</div>
+<div class="row"><button class="btn pink" id="eListen">LISTEN TO "DRUNK"</button><button class="btn" id="againBtn">PLAY AGAIN</button></div>
+</div>
+</div>
+</div>
+
+<div id="help" class="ov" role="dialog" aria-label="How to play">
+<div class="pop box">
+<h3>HOW TO PLAY</h3>
+<div style="font-size:21px;line-height:1.1" id="helpText"></div>
+<button class="btn hot" id="helpClose">GOT IT</button>
+</div>
+</div>
+</div>
+<div id="padR" class="pad"><button id="aBtn" aria-label="Interact">A</button><div class="padlab">TALK<br>USE<br>NEXT</div></div>
+</div>
+<script>
+{
+// ===== settings you fill in =====
+const LINKS = [
+  ['SPOTIFY', ''],
+  ['APPLE MUSIC', ''],
+  ['YOUTUBE', ''],
+  ['AMAZON MUSIC', '']
+];
+const AUDIO = { background: '8%20bit%20version.mp3' }; // the jukebox restarts this track from the top
+const GAME_SECONDS = 360;
+const FALLBACK_URL = 'https://claude.ai/artifact/VLApBAbQCyQiqwe6XAvcmd'; // swap for your own site when you host the game
+const SITE = (/^https?:$/.test(location.protocol) && !/claude|anthropic|usercontent/i.test(location.hostname)) ? location.origin + location.pathname : FALLBACK_URL;
+const SPELL = 'denmadebswodahs'.split('').reverse().join('');
+const L = s => ({ t: '"' + s + '"', ly: true });
+const ATTR = "'Drunk' by Eli Lie (single, 2026)";
+const ASK = t => ({ t, ch: [['LATER', () => {}], ['LISTEN FOR CLUES', () => openListen(), 'pink']] });
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+
+// ===== basics =====
+const W = 296, H = 248;
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+const $ = id => document.getElementById(id);
+const IMG = {};
+['map', 'home', 'tavern', 'club', 'exhouse', 'exhouse_off', 'title'].forEach(n => { const i = new Image(); i.src = 'img/' + n + '.png'; IMG[n] = i; });
+
+const st = { mode: 'title', scene: 'home', x: 100, y: 182, dir: 'down', step: 0, stepT: 0, courage: 0, buzz: 0, key: false,
+  watched: false, porchOff: false, knocks: 0, played: 0, drinks: 0, t: 0, look: null, drive: null, curb: null, near: null, lock: false };
+
+// ===== sprite =====
+function rgb(h) { return [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)); }
+function hex(c) { return '#' + c.map(v => { v = Math.max(0, Math.min(255, Math.round(v))); return (v < 16 ? '0' : '') + v.toString(16); }).join(''); }
+const mul = (h, f) => hex(rgb(h).map(v => v * f));
+const lit = (h, t) => { const w = [255, 250, 235]; return hex(rgb(h).map((v, i) => v + (w[i] - v) * t)); };
+const OUT = '#160e1e';
+function pixels(look, facing, step) {
+  const SW = 16, SH = 26, g = new Array(SW * SH).fill(null);
+  const r = (x, y, w, h, c) => { for (let yy = y; yy < y + h; yy++) for (let xx = x; xx < x + w; xx++) if (xx >= 0 && xx < SW && yy >= 0 && yy < SH) g[yy * SW + xx] = c; };
+  const sk = look.skin, hr = look.hair, sh = look.shirt, pa = look.pants, shoe = look.outfit === 4 ? '#0e0e12' : '#2a2228';
+  const sks = mul(sk, .78), hrs = mul(hr, .7), shs = mul(sh, .7), pas = mul(pa, .7), shl = lit(sh, .25), hrl = lit(hr, .3);
+  const lu = step === 1 ? 1 : 0, ru = step === 2 ? 1 : 0, back = facing === 'up';
+  r(5, 17, 3, 6 - lu, pa); r(8, 17, 3, 6 - ru, pas); r(4, 23 - lu, 4, 2, shoe); r(8, 23 - ru, 4, 2, shoe);
+  const ty = 11;
+  r(3, ty, 10, 2, sh); r(4, ty, 8, 7, sh); r(5, ty + 1, 1, 4, shl); r(10, ty, 2, 7, shs);
+  if (!back) {
+    if (look.outfit === 4) { r(6, ty, 4, 1, '#3a3a46'); }
+    else if (look.outfit === 1) { const dk = mul(sh, .5); r(4, ty + 2, 8, 1, dk); r(4, ty + 4, 8, 1, dk); r(7, ty, 1, 7, dk); }
+    else if (look.outfit === 2) { r(7, ty, 2, 7, '#e8e0cc'); r(8, ty, 1, 7, '#b9ae96'); }
+    else if (look.outfit === 3) { r(6, ty, 4, 2, '#f4f0e6'); r(7, ty, 2, 5, '#d63a3a'); r(8, ty + 1, 1, 4, '#a02828'); }
+  } else if (look.outfit === 1) { const dk = mul(sh, .5); r(4, ty + 2, 8, 1, dk); r(4, ty + 4, 8, 1, dk); r(7, ty, 1, 7, dk); }
+  r(4, ty + 6, 8, 1, mul(pa, .5));
+  const swing = step === 1 ? 1 : step === 2 ? -1 : 0;
+  r(1, ty + 1 + swing, 2, 5, sh); r(13, ty + 1 - swing, 2, 5, shs); r(1, ty + 6 + swing, 2, 2, sk); r(13, ty + 6 - swing, 2, 2, sks);
+  const hy = ty - 8;
+  r(7, hy + 7, 2, 1, sks); r(4, hy, 8, 7, sk); r(5, hy + 6, 6, 1, sk); r(11, hy + 1, 1, 6, sks);
+  r(3, hy + 3, 1, 2, sk); r(12, hy + 3, 1, 2, sks);
+  if (!back) {
+    r(6, hy + 3, 1, 2, OUT); r(9, hy + 3, 1, 2, OUT); r(6, hy + 3, 1, 1, '#fff6e0'); r(9, hy + 3, 1, 1, '#fff6e0');
+    r(5, hy + 2, 2, 1, hrs); r(9, hy + 2, 2, 1, hrs); r(7, hy + 5, 2, 1, '#9a4a3a');
+    if (st.buzz >= 3) { r(5, hy + 4, 1, 1, '#e0789a'); r(10, hy + 4, 1, 1, '#e0789a'); }
+    if (look.facial === 1) { for (let x = 5; x < 11; x++) for (let y = hy + 5; y < hy + 7; y++) if ((x + y) % 2 === 0) r(x, y, 1, 1, hrs); }
+    else if (look.facial === 2) { r(4, hy + 5, 8, 2, hr); r(5, hy + 7, 6, 1, hrs); r(7, hy + 5, 2, 1, '#9a4a3a'); }
+    else if (look.facial === 3) { r(6, hy + 5, 4, 1, hr); }
+    else if (look.facial === 4) { r(4, hy + 4, 1, 3, hr); r(11, hy + 4, 1, 3, hr); r(5, hy + 7, 6, 1, hr); r(6, hy + 5, 4, 1, hr); }
+    if (look.glasses) { r(3, hy + 3, 10, 1, '#0a0a0e'); r(4, hy + 3, 3, 2, '#0a0a0e'); r(9, hy + 3, 3, 2, '#0a0a0e'); r(5, hy + 3, 1, 1, '#6a7aa0'); r(10, hy + 3, 1, 1, '#6a7aa0'); }
+  } else if (look.hs !== 4) { r(4, hy, 8, 6, hr); r(10, hy, 2, 6, hrs); r(5, hy, 3, 1, hrl); if (look.hs === 1) { r(4, hy, 8, 9, hr); r(10, hy, 2, 9, hrs); } }
+  else if (look.glasses) { r(3, hy + 3, 10, 1, '#0a0a0e'); }
+  if (look.hs === 4) { r(5, hy, 3, 1, lit(sk, .3)); }
+  else if (look.hs === 0) { r(4, hy - 1, 8, 3, hr); r(3, hy, 1, 3, hr); r(12, hy, 1, 3, hrs); r(5, hy - 1, 3, 1, hrl); r(10, hy, 2, 2, hrs); }
+  else if (look.hs === 1) { r(4, hy - 1, 8, 3, hr); r(3, hy, 2, 9, hr); r(11, hy, 2, 9, hrs); r(5, hy - 1, 3, 1, hrl); }
+  else if (look.hs === 2) { r(7, hy - 3, 2, 4, hr); r(7, hy - 3, 1, 3, hrl); r(4, hy, 8, 1, hrs); }
+  else if (look.hs === 3) { r(4, hy, 8, 1, hrs); r(5, hy - 1, 6, 1, hrs); }
+  if (look.hat === 1) { const b = '#3f7fb0'; r(4, hy - 2, 8, 4, b); r(3, hy + 1, 10, 1, mul(b, .7)); r(5, hy - 2, 3, 1, lit(b, .3)); r(7, hy - 3, 2, 1, '#f4f0e6'); }
+  else if (look.hat === 2) { const c = '#d63a3a'; r(4, hy - 2, 8, 3, c); if (!back) r(5, hy - 2, 6, 2, '#f4f0e6'); r(3, hy + 1, 10, 1, mul(c, .7)); }
+  else if (look.hat === 3) { const b = '#9a6236'; r(4, hy - 3, 8, 4, b); r(4, hy, 8, 1, '#4a2c18'); r(1, hy + 1, 14, 1, b); r(5, hy - 3, 3, 1, lit(b, .3)); }
+  const OW = SW + 2, OH = SH + 2, out = new Array(OW * OH).fill(null);
+  const at = (x, y) => (x >= 0 && x < SW && y >= 0 && y < SH) ? g[y * SW + x] : null;
+  for (let y = 0; y < OH; y++) for (let x = 0; x < OW; x++) {
+    const c = at(x - 1, y - 1);
+    if (c) out[y * OW + x] = c;
+    else if (at(x - 2, y - 1) || at(x, y - 1) || at(x - 1, y - 2) || at(x - 1, y)) out[y * OW + x] = OUT;
+  }
+  return out;
+}
+function toCanvas(px, w, h) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d'), d = x.createImageData(w, h);
+  px.forEach((p, i) => { if (!p) return; const v = rgb(p); d.data.set([v[0], v[1], v[2], 255], i * 4); });
+  x.putImageData(d, 0, 0); return c;
+}
+const sprCache = {};
+function sprite(facing, step) {
+  const k = facing + step + (st.buzz >= 3 ? 'd' : '');
+  if (!sprCache[k]) sprCache[k] = toCanvas(pixels(st.look, facing, step), 18, 28);
+  return sprCache[k];
+}
+function carCanvas(col) {
+  const c = document.createElement('canvas'); c.width = 22; c.height = 36; const x = c.getContext('2d');
+  const f = (a, b, w, h, k) => { x.fillStyle = k; x.fillRect(a, b, w, h); };
+  f(1, 2, 20, 33, OUT); f(0, 5, 22, 27, OUT);
+  f(2, 3, 18, 31, col); f(1, 6, 20, 25, col); f(2, 3, 18, 1, lit(col, .4)); f(2, 4, 2, 27, lit(col, .2)); f(18, 4, 2, 27, mul(col, .75));
+  f(4, 8, 14, 6, '#8ac8e8'); f(5, 9, 5, 2, '#d8f0ff'); f(4, 14, 14, 10, mul(col, .85)); f(4, 24, 14, 4, '#6a9ab8');
+  f(3, 1, 4, 2, '#fff6c0'); f(15, 1, 4, 2, '#fff6c0'); f(3, 33, 4, 2, '#ff4040'); f(15, 33, 4, 2, '#ff4040');
+  return c;
+}
+
+// ===== scenes =====
+const tree = (x, y) => [x + 4, y + 12, 14, 10];
+const SC = {
+  map: { img: 'map', name: 'TOWN', walk: [[0, 0, 296, 248]],
+    block: [[12, 10, 94, 74], [160, 12, 76, 68], [16, 150, 84, 72], [170, 150, 102, 78], [106, 174, 20, 32],
+      tree(262, 10), tree(270, 60), tree(112, 8), tree(110, 190), tree(6, 96), tree(152, 186),
+      [124, 108, 6, 4], [226, 108, 6, 4], [124, 156, 6, 4], [159, 233, 14, 6], [149, 231, 14, 6]],
+    doors: [{ r: [50, 84, 18, 8], to: 'tavern' }, { r: [188, 80, 20, 8], to: 'exhouse' }, { r: [46, 222, 20, 8], to: 'home' }, { r: [206, 228, 30, 8], to: 'club' }],
+    acts: [{ r: [98, 166, 36, 48], l: 'DRIVE', f: () => askDrive() }] },
+  home: { img: 'home', name: 'HOME',
+    walk: [[4, 20, 146, 94], [154, 20, 138, 94], [4, 134, 176, 110], [184, 134, 108, 110], [60, 108, 18, 30], [146, 70, 12, 18], [176, 190, 12, 22], [58, 240, 26, 8]],
+    block: [[12, 24, 48, 58], [64, 22, 14, 21], [160, 24, 28, 61], [210, 22, 20, 22], [256, 20, 16, 26], [14, 136, 72, 32], [26, 186, 48, 17],
+      [100, 128, 34, 26], [188, 128, 76, 36], [266, 120, 22, 36], [218, 186, 30, 23], [196, 216, 20, 16]],
+    exit: { r: [58, 244, 26, 4], to: 'map' },
+    acts: [
+      { r: [12, 166, 76, 14], l: 'COUCH', f: () => couch() },
+      { r: [186, 162, 34, 12], l: 'WHISKEY', f: () => drink('whiskey') },
+      { r: [262, 154, 30, 10], l: 'FRIDGE', f: () => say(['A lemon, some mustard, and a fridge magnet shaped like a guitar.']) },
+      { r: [204, 42, 32, 10], l: 'MIRROR', f: () => mirror() },
+      { r: [10, 80, 54, 12], l: 'BED', f: () => bed() },
+      { r: [132, 134, 36, 10], l: 'CLOSET', f: () => closet() },
+      { r: [98, 152, 40, 10], l: 'TV', f: () => say(['Static. Same as your head.']) }] },
+  tavern: { img: 'tavern', name: 'TAVERN', walk: [[0, 56, 296, 192]],
+    block: [[58, 54, 176, 62], [74, 130, 12, 8], [104, 130, 12, 8], [164, 130, 12, 8], [194, 130, 12, 8], [250, 66, 30, 44], [20, 192, 34, 30], [224, 192, 34, 30], [52, 220, 16, 8]],
+    exit: { r: [126, 244, 44, 4], to: 'map' },
+    acts: [
+      { r: [96, 116, 64, 14], l: 'BARTENDER', f: () => tavernBartender() },
+      { r: [242, 108, 44, 14], l: 'JUKEBOX', f: () => jukebox() },
+      { r: [14, 186, 46, 50], l: 'REGULAR', f: () => say([{ who: 'REGULAR', t: "Weren't you at the club last night? You handed their bartender something. Made a whole speech about it." }, L('Rumors in the back rows.')]) },
+      { r: [218, 186, 46, 40], l: 'COWBOY', f: () => say([{ who: 'COWBOY', t: "Drink up, or don't. Either way it's your night, partner." }]) }] },
+  club: { img: 'club', name: 'THE CLUB', walk: [[0, 100, 296, 148], [30, 98, 236, 4]],
+    block: [[4, 176, 104, 72], [250, 232, 16, 8], [34, 145, 12, 6], [64, 135, 12, 6], [98, 147, 12, 6], [174, 141, 12, 6], [208, 151, 12, 6], [242, 137, 12, 6], [228, 181, 12, 6]],
+    exit: { r: [284, 196, 12, 40], to: 'map' },
+    acts: [
+      { r: [100, 98, 100, 14], l: 'THE BAND', f: () => band() },
+      { r: [106, 200, 22, 40], l: 'BARTENDER', f: () => clubBartender() },
+      { r: [170, 136, 26, 20], l: 'MOSH', f: () => mosh() }] },
+  exhouse: { img: 'exhouse', name: "EX'S HOUSE", walk: [[0, 112, 296, 136]],
+    block: [[68, 6, 160, 106], [2, 148, 120, 18], [166, 148, 128, 18], [106, 164, 14, 9], [238, 182, 10, 6]],
+    exit: { r: [0, 245, 296, 3], to: 'map' },
+    acts: [
+      { r: [128, 112, 40, 12], l: 'DOOR', f: () => knock() },
+      { r: [98, 170, 30, 12], l: 'MAILBOX', f: () => say(['A letter with your name on it, in her handwriting:', { who: 'THE LETTER', t: 'Your box is still in the closet. Your key is at the club. Please stop coming by.' }, ASK('On the back she wrote out one of your songs. Most of it is smudged.')]) }] }
+};
+const SPAWN = { tavern: [148, 236], club: [262, 214], exhouse: [150, 236], home: [70, 236] };
+const MAPSPAWN = { tavern: [59, 98], exhouse: [198, 94], home: [56, 238], club: [221, 245] };
+
+function inR(x, y, r) { return x >= r[0] && x < r[0] + r[2] && y >= r[1] && y < r[1] + r[3]; }
+function free(x, y) {
+  const s = SC[st.scene], pts = [[x - 4, y - 3], [x + 4, y - 3], [x - 4, y], [x + 4, y]];
+  return pts.every(p => s.walk.some(r => inR(p[0], p[1], r)) && !s.block.some(r => inR(p[0], p[1], r)));
+}
+
+// ===== HUD =====
+const mmss = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+function hud() {
+  $('mC').innerHTML = [0, 1, 2, 3, 4].map(i => '<i class="' + (i < st.courage ? 'on' : '') + '"></i>').join('');
+  $('mB').innerHTML = [0, 1, 2, 3, 4].map(i => '<i class="' + (i < st.buzz ? 'on' : '') + '"></i>').join('');
+  $('keyico').style.display = st.key ? 'inline-block' : 'none';
+  const left = Math.max(0, GAME_SECONDS - st.played), ck = $('clock'); ck.textContent = mmss(left); ck.classList.toggle('low', left < 60);
+  $('loc').textContent = st.mode === 'drive' ? 'ON THE ROAD' : (SC[st.scene] || {}).name || '';
+  for (const k in sprCache) delete sprCache[k];
+}
+
+// ===== dialog =====
+let dq = [], dDone = null, dChoice = null;
+function say(lines, done) { dq = lines.slice(); dDone = done || null; st.lock = true; nextLine(); }
+function nextLine() {
+  const d = $('dlg');
+  if (!dq.length) { d.style.display = 'none'; st.lock = false; dChoice = null; const f = dDone; dDone = null; if (f) f(); return; }
+  let L = dq.shift(); if (typeof L === 'string') L = { t: L };
+  d.innerHTML = (L.who ? '<div class="who">' + L.who + '</div>' : '') + '<div' + (L.ly ? ' class="ly"' : '') + '>' + L.t + '</div>' + (L.ly ? '<div class="attr">' + ATTR + '</div>' : '');
+  if (L.fx) L.fx();
+  dChoice = L.ch || null;
+  if (dChoice) {
+    const c = document.createElement('div'); c.className = 'choices';
+    dChoice.forEach((o, i) => { const b = document.createElement('button'); b.className = 'btn' + (o[2] === 'pink' ? ' pink' : i === 0 ? ' hot' : ''); b.textContent = o[0];
+      b.onclick = e => { e.stopPropagation(); d.style.display = 'none'; dq = []; dDone = null; st.lock = false; dChoice = null; o[1](); }; c.appendChild(b); });
+    d.appendChild(c); setTimeout(() => c.firstChild && c.firstChild.focus(), 30);
+  } else d.insertAdjacentHTML('beforeend', '<div class="more">SPACE &#9660;</div>');
+  d.style.display = 'block';
+}
+$('dlg').addEventListener('click', () => { if (!dChoice) nextLine(); });
+function fade(text, ms, mid, ly) {
+  const f = $('fade'); f.innerHTML = esc(text || '') + (ly ? '<span class="fly">"' + esc(ly) + '"</span><span class="fattr">' + ATTR + '</span>' : ''); f.style.opacity = 1; st.lock = true;
+  setTimeout(() => { if (mid) mid(); setTimeout(() => { f.style.opacity = 0; st.lock = false; }, ms || 900); }, 650);
+}
+
+// ===== actions =====
+function go(scene, x, y) { st.scene = scene; st.x = x; st.y = y; st.dir = 'down'; if (scene !== 'club') st.watched = false; hud(); }
+function enter(to) {
+  if (to === 'club' && st.courage < 2) { st.y += 10; return say([{ who: 'BOUNCER', t: 'Not tonight, pal.' }, '(You need 2 Courage to get past the bouncer.)']); }
+  st.buzz = Math.max(0, st.buzz - 1);
+  fade('', 300, () => go(to, SPAWN[to][0], SPAWN[to][1]));
+}
+function leave() {
+  if (st.scene === 'home' && st.courage < 1) { st.y -= 8; return say(['Not tonight. You can\'t face the world sober.', '(You need 1 Courage to leave. The kitchen has whiskey.)']); }
+  const from = st.scene; fade('', 300, () => go('map', MAPSPAWN[from][0], MAPSPAWN[from][1]));
+}
+function drink(kind) {
+  const strong = kind === 'club';
+  st.courage = Math.min(5, st.courage + 1); st.buzz = Math.min(5, st.buzz + (strong ? 2 : 1)); st.drinks++; hud(); sfx('drink');
+  const msg = { whiskey: 'You pour a whiskey from the kitchen bottle.', tavern: 'The bartender slides you a drink.', club: 'Club pours are strong.' }[kind];
+  say([msg + ' +1 Courage, +' + (strong ? 2 : 1) + ' Buzz.'], () => { if (st.buzz >= 5) blackout(); });
+}
+function couch() {
+  say([L("You said you never really left the couch baby."), { t: 'Sleep it off? The night starts over: Courage and Buzz back to 0.', ch: [['SLEEP', () => fade('ZZZ...', 900, () => { st.courage = 0; st.buzz = 0; st.porchOff = false; st.knocks = 0; go('home', 50, 178); })], ['NOT YET', () => {}]] }]);
+}
+function mirror() {
+  const m = ['You look tired. And painfully sober.', 'A little flushed. Still you.', 'A little flushed. Still you.', 'Who is that guy?', 'There are two of you. Neither one looks good.', ''];
+  say(st.buzz >= 4 ? [m[st.buzz], L('Faces in the shrouds.')] : [m[st.buzz]]);
+}
+function bed() {
+  if (st.buzz > 2) return say(["You can't make it into bed like this. The couch is calling."]);
+  say(['You lie down for a minute. Nothing gets solved, but your head clears a little.'], () => { st.buzz = Math.max(0, st.buzz - 1); hud(); });
+}
+function closet() {
+  if (!st.key) return say(['The closet is padlocked.', 'Where did you leave that key?']);
+  if (st.buzz > 2) return say(["You can't get the key in the lock. Your hands won't stop shaking.", '(Get your Buzz down to 2 or less.)']);
+  say(['The padlock clicks open. On the shelf: a cardboard box. Your handwriting on the side.', L('Cut in the dark. The ones we let drown and the others in the ark.')], () => openSpell());
+}
+let bartTalk = false;
+function tavernBartender() {
+  say([{ who: 'BARTENDER', t: 'What can I get you?', ch: [['A DRINK', () => drink('tavern')], ['TALK', () => {
+    if (st.courage < 1) return say(["You can't find the words.", '(Talking takes 1 Courage.)']);
+    say([{ who: 'BARTENDER', t: "Rough night? I've seen you like this before." }, { who: 'BARTENDER', t: 'Everybody keeps a box they never open. Maybe it\'s time you opened yours.' }, Object.assign(ASK('Like the song on the jukebox says, it\'s all in the words.'), { who: 'BARTENDER' })]);
+  }], ['NOTHING', () => {}]] }]);
+}
+function jukebox() {
+  playJukebox();
+  say(['The jukebox kicks in. It\'s "Drunk" by Eli Lie.', L('Ah oooooo, love me lordy like you used to wanna.'), { t: 'The whole bar sways a little.', ch: [['LISTEN FOR CLUES', () => openListen()], ['JUST VIBE', () => {}]] }]);
+}
+function band() {
+  const lines = [];
+  if (!st.watched) { st.watched = true; st.courage = Math.min(5, st.courage + 1); hud(); lines.push('Eli Lie and the band tear into a song. Something in your chest loosens. +1 Courage.'); }
+  else lines.push('The band is still going.');
+  lines.push(L('Ah oooooo, love me lordy like you used to wanna.'), L('Ah oooooo, love me love me like you were my mama.'));
+  lines.push({ who: 'ELI LIE, ON STAGE', t: 'Psst... the secrets are in the lyrics.' });
+  lines.push({ t: 'He tips his sunglasses down and winks at nobody in particular.', ch: [['LISTEN FOR CLUES', () => openListen()], ['KEEP WATCHING', () => {}]] });
+  say(lines);
+}
+function clubBartender() {
+  if (st.key) return say([{ who: 'BARTENDER', t: 'Need anything else?', ch: [['A DRINK', () => drink('club')], ['NO THANKS', () => {}]] }]);
+  if (st.courage < 2) return say(['The bartender looks right through you.', '(You need 2 Courage to get their attention.)']);
+  say([{ who: 'BARTENDER', t: 'Oh, it\'s you. You left this here last night.' }, { who: 'BARTENDER', t: 'Made me promise not to give it back till you could stand up straight. Close enough.' }, 'You got the CLOSET KEY.', ASK('Now you just need the right words. They\'re in the song.')],
+    () => { st.key = true; hud(); sfx('key'); nudge(); });
+}
+function mosh() {
+  say([{ t: 'The pit is swirling. Jump in?', ch: [['MOSH', () => {
+    st.buzz = Math.min(5, st.buzz + 1); const hurt = Math.random() < .5; if (hurt) st.courage = Math.max(0, st.courage - 1); hud();
+    say(['You throw yourself in. +1 Buzz.' + (hurt ? ' An elbow finds your ribs. -1 Courage.' : ' You come out grinning.')], () => { if (st.buzz >= 5) blackout(); });
+  }], ['STAY OUT', () => {}]] }]);
+}
+function knock() {
+  if (st.knocks >= 1) return say(['The porch light is still off.', { t: 'Knock again?', ch: [['WALK AWAY', () => {}], ['KNOCK AGAIN', () => police(), 'pink']] }]);
+  if (st.courage < 3) return say([L('Can I come by and say hello and we can always slow dance maybe.'), "You stand at the door. You can't make yourself knock.", '(Knocking takes 3 Courage.)']);
+  st.courage -= 1; st.knocks = 1; hud();
+  say([L('Can I come by and say hello and we can always slow dance maybe.'), 'You knock.', 'Footsteps. A long pause.',
+    { t: "The porch light clicks off. That's your answer. -1 Courage.", fx: () => { st.porchOff = true; sfx('click'); } }]);
+}
+function police() {
+  sfx('knock'); st.mode = 'police'; st.pol = { t: 0, done: false };
+  setTimeout(() => sfx('siren'), 900);
+}
+function updatePolice(dt) {
+  const p = st.pol; p.t += dt;
+  if (p.t > 5 && !p.done) { p.done = true;
+    fade('BLACKOUT.', 2200, () => { st.mode = 'play'; st.courage = 0; st.buzz = 1; st.porchOff = false; st.knocks = 0; go('home', 50, 178);
+      setTimeout(() => say(["You wake up on the couch. You don't remember the ride home, or who gave it to you.", 'All your Courage is gone.',
+        ASK('Maybe the song knows a better way to say goodbye.')]), 1500); }, 'The pearly gates indeed.'); }
+}
+const copCar = [0, 1].map(ph => { const c = carCanvas('#f4f0e6'), x = c.getContext('2d');
+  x.fillStyle = '#16161c'; x.fillRect(2, 3, 18, 5); x.fillRect(2, 27, 18, 7); x.fillStyle = '#8ac8e8'; x.fillRect(4, 8, 14, 6);
+  x.fillStyle = ph ? '#ff3040' : '#3060ff'; x.fillRect(4, 16, 7, 3); x.fillStyle = ph ? '#3060ff' : '#ff3040'; x.fillRect(11, 16, 7, 3); return c; });
+function drawPolice() {
+  const p = st.pol, ph = Math.floor(p.t * 6) % 2;
+  ctx.drawImage(IMG.exhouse_off, 0, 0);
+  const s = sprite('up', 0);
+  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(st.x, st.y - 1, 7, 2, 0, 0, 7); ctx.fill();
+  ctx.drawImage(s, Math.round(st.x - 9), Math.round(st.y - 27));
+  if (p.t > .9) {
+    const cx = Math.min(150, -30 + (p.t - .9) * 180);
+    ctx.save(); ctx.translate(cx, 222); ctx.rotate(Math.PI / 2); ctx.drawImage(copCar[ph], -11, -18); ctx.restore();
+    if (p.t > 1.8) {
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      const g = ctx.createRadialGradient(ph ? 60 : 236, 140, 10, ph ? 60 : 236, 140, 200);
+      g.addColorStop(0, ph ? 'rgba(255,40,60,.55)' : 'rgba(40,80,255,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.restore();
+      ctx.fillStyle = 'rgba(10,8,18,.85)'; ctx.fillRect(0, 0, W, 16); ctx.fillStyle = ph ? '#ff6a7a' : '#7a9aff'; ctx.font = '6px "Press Start 2P"';
+      ctx.fillText('SOMEBODY CALLED THE POLICE.', 66, 11);
+    }
+  }
+}
+
+function askDrive() {
+  const warn = st.buzz >= 3 ? [L("It's tunnel vision for me."), 'You probably shouldn\'t be driving right now.'] : [];
+  say(warn.concat([{ t: 'Drive where?', ch: [['TAVERN', () => startDrive('tavern')], ['THE CLUB', () => startDrive('club')], ["EX'S HOUSE", () => startDrive('exhouse')], ['STAY PARKED', () => {}]] }]));
+}
+
+// ===== blackout =====
+function blackout() {
+  st.lock = true; sfx('blackout');
+  fade('BLACKOUT.', 2000, () => {
+    const r = Math.random();
+    if (r < .4) { st.courage = Math.floor(st.courage / 2); st.buzz = 2; go('home', 50, 178); setTimeout(() => say(['You wake up on the couch. You don\'t remember getting home.', 'Half your Courage went wherever your night went.', ASK("Can't remember last night? The song might.")]), 1500); }
+    else if (r < .75) { st.buzz = 4; startDrive(['tavern', 'club', 'exhouse'][Math.floor(Math.random() * 3)], true); }
+    else { st.buzz = 4; go('exhouse', 156, 200); st.mode = 'curb'; st.curb = { t: 0 }; }
+  }, 'The pearly gates indeed.');
+}
+function wakeCouch(msg) {
+  st.mode = 'play'; st.courage = 0; st.buzz = 1; st.porchOff = false; st.knocks = 0;
+  fade('', 900, () => { go('home', 50, 178); setTimeout(() => say(msg), 1500); });
+}
+
+// ===== driving =====
+let grassC = null;
+function makeGrass() {
+  const c = document.createElement('canvas'); c.width = W; c.height = H; const x = c.getContext('2d');
+  x.fillStyle = '#2e7d4f'; x.fillRect(0, 0, W, H); x.fillStyle = '#3c3a4a'; x.fillRect(64, 0, 168, H);
+  for (let i = 0; i < 4200; i++) { x.fillStyle = ['#1d5a3a', '#3f9a5c', '#3c3a4a', '#302e3c'][i % 4 < 2 ? i % 2 : 2 + i % 2]; const px = Math.random() * W | 0, py = Math.random() * H | 0;
+    if (i % 4 < 2 && px > 62 && px < 234) continue; if (i % 4 >= 2 && (px < 64 || px > 231)) continue; x.fillRect(px, py, 1, 1); }
+  return c;
+}
+const car = { me: carCanvas('#d63a3a'), them: carCanvas('#3f7fb0') };
+function startDrive(dest, forced, opening) {
+  st.mode = 'drive'; st.lock = false;
+  st.drive = { t: 0, dur: 10, x: 148, dest, forced, opening, obs: [], next: .6, scroll: 0, crashed: false, trees: [[10, 20], [250, 80], [20, 150], [262, 200], [4, 230], [256, 0]] };
+  if (!grassC) grassC = makeGrass(); hud();
+  if (opening) say([L("It's tunnel vision for me."), 'LEFT and RIGHT to steer (or A and D). Make it home in 10 seconds.']);
+  else if (forced) say(['You blink. You\'re behind the wheel. How did you get here?', 'Survive 10 seconds. LEFT and RIGHT to steer.']);
+  else say(['LEFT and RIGHT to steer. Make it 10 seconds.' + (st.buzz >= 3 ? ' Good luck with that.' : '')]);
+}
+function updateDrive(dt) {
+  const d = st.drive; if (st.lock || d.crashed) return;
+  d.t += dt; d.scroll = (d.scroll + 120 * dt) % 26;
+  let steer = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);
+  d.x += steer * 95 * dt;
+  if (st.buzz >= 3) d.x += (Math.sin(d.t * 1.9) * 38 + Math.sin(d.t * 5.3) * 14) * dt * (st.buzz - 2);
+  d.x = Math.max(74, Math.min(222, d.x)); d.steer = steer;
+  d.next -= dt;
+  if (d.next <= 0) { d.next = .55 + Math.random() * .5;
+    if (Math.random() < .5) d.obs.push({ k: 'cone', x: 76 + Math.random() * 140, y: -12, v: 120 });
+    else d.obs.push({ k: 'car', x: 84 + Math.random() * 124, y: -40, v: 230 }); }
+  d.obs.forEach(o => o.y += o.v * dt); d.obs = d.obs.filter(o => o.y < H + 40);
+  d.trees.forEach(tr => { tr[1] += 120 * dt; if (tr[1] > H) tr[1] -= H + 40; });
+  const cx = d.x - 9, cy = 186;
+  for (const o of d.obs) {
+    const ow = o.k === 'cone' ? 8 : 18, oh = o.k === 'cone' ? 10 : 32;
+    if (cx < o.x + ow - 2 && cx + 18 > o.x + 2 && cy < o.y + oh - 2 && cy + 32 > o.y + 2) { d.crashed = true; sfx('crash');
+      const how = ASK('Arrow keys or WASD to move. SPACE to interact. Stuck? The answers are in the song.');
+      const couchLy = L("And as the line's going dead you said you never really left the couch baby.");
+      return fade('CRASH.', 2000, () => wakeCouch(d.opening ? [couchLy, 'You wake up on the couch. You don\'t remember the rest of the drive.', 'Somewhere in this mess is the purpose of life. Probably not in the sink.', how]
+        : [couchLy, 'You wake up on the couch with a headache and no memory of the drive.', 'All your Courage is gone. The car somehow made it home without you.', ASK('The song saw this coming.')]), 'The soothing poem that wraps my car around convenient tree.'); }
+  }
+  if (d.t >= d.dur) { st.mode = 'play'; const p = MAPSPAWN[d.dest];
+    fade('', 300, () => { go('map', p[0], p[1]); if (d.forced) st.buzz = 3; hud();
+      say(d.opening ? ['You made it home. Somehow. The front door is right there.', 'Somewhere in this mess is the purpose of life. Probably not in the sink.', ASK('Arrow keys or WASD to move. SPACE to interact. Stuck? The answers are in the song.')] : ['You made it. Somehow.']); }); }
+}
+function drawDrive() {
+  const d = st.drive;
+  ctx.drawImage(grassC, 0, 0);
+  ctx.fillStyle = '#e8e0d0'; ctx.fillRect(62, 0, 3, H); ctx.fillRect(231, 0, 3, H);
+  ctx.fillStyle = '#e8c040'; for (let y = -26 + d.scroll; y < H; y += 26) ctx.fillRect(146, y, 3, 14);
+  d.trees.forEach(tr => { ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.fillRect(tr[0] + 4, tr[1] + 26, 24, 5);
+    ctx.fillStyle = OUT; ctx.beginPath(); ctx.ellipse(tr[0] + 15, tr[1] + 13, 16, 14, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#2e7d4f'; ctx.beginPath(); ctx.ellipse(tr[0] + 15, tr[1] + 13, 14, 12, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#3f9a5c'; ctx.beginPath(); ctx.ellipse(tr[0] + 11, tr[1] + 9, 6, 5, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = '#5a3820'; ctx.fillRect(tr[0] + 12, tr[1] + 25, 6, 6); });
+  d.obs.forEach(o => {
+    if (o.k === 'cone') { ctx.fillStyle = OUT; ctx.fillRect(o.x - 1, o.y - 1, 10, 12); ctx.fillStyle = '#ff8a2a'; ctx.fillRect(o.x + 2, o.y, 4, 3); ctx.fillRect(o.x + 1, o.y + 3, 6, 5);
+      ctx.fillStyle = '#f4f0e6'; ctx.fillRect(o.x + 2, o.y + 4, 4, 1); ctx.fillStyle = '#3a3a44'; ctx.fillRect(o.x, o.y + 8, 8, 2); }
+    else { ctx.save(); ctx.translate(o.x + 11, o.y + 18); ctx.rotate(Math.PI); ctx.drawImage(car.them, -11, -18); ctx.restore(); }
+  });
+  const drawMe = (ox, a) => { ctx.save(); ctx.globalAlpha = a; ctx.translate(d.x + ox, 202); ctx.rotate((d.steer || 0) * .18 + (st.buzz >= 3 ? Math.sin(d.t * 3) * .12 : 0)); ctx.drawImage(car.me, -11, -18); ctx.restore(); };
+  if (st.buzz >= 3) { drawMe(-12, .3); drawMe(12, .3); }
+  drawMe(0, 1);
+  ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = '#8a90d8'; ctx.fillRect(0, 0, W, H); ctx.restore();
+  const g = ctx.createRadialGradient(d.x, 150, 4, d.x, 150, 60); g.addColorStop(0, 'rgba(255,240,180,.35)'); g.addColorStop(1, 'rgba(255,240,180,0)');
+  ctx.fillStyle = g; ctx.fillRect(d.x - 60, 90, 120, 120);
+  ctx.fillStyle = 'rgba(10,8,18,.85)'; ctx.fillRect(W - 96, 6, 90, 16);
+  ctx.fillStyle = '#ffc24a'; ctx.font = '8px "Press Start 2P"'; ctx.fillText('ARRIVE ' + Math.max(0, Math.ceil(d.dur - d.t)), W - 90, 18);
+}
+
+// ===== curb blackout =====
+function updateCurb(dt) {
+  const c = st.curb; if (st.lock) return; c.t += dt;
+  if (c.t > 5.5 && !c.done) { c.done = true; sfx('blackout'); wakeCouch([L('Can I come by and say hello and we can always slow dance maybe.'), "You wake up on the couch. Your throat burns. Her porch light was on the whole time you were out there.", 'All your Courage is gone.', ASK('Maybe listen to the song before you end up out there again.')]); }
+}
+function drawCurb() {
+  const c = st.curb;
+  ctx.drawImage(st.porchOff ? IMG.exhouse_off : IMG.exhouse, 0, 0);
+  const p = sprite('down', 0);
+  ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(156, 199, 8, 2, 0, 0, 7); ctx.fill();
+  ctx.drawImage(p, 147, 176 + (c.t > 4 ? 2 : 0) + Math.round(Math.sin(c.t * 3)));
+  if (c.t > 4.2) { ctx.fillStyle = '#a8b83a'; ctx.beginPath(); ctx.ellipse(176, 205, 11, 3, 0, 0, 7); ctx.fill(); ctx.fillStyle = '#d8e070'; ctx.fillRect(170, 204, 3, 1); }
+  const fill = Math.min(1, c.t / 4.2);
+  ctx.fillStyle = 'rgba(10,8,18,.85)'; ctx.fillRect(108, 152, 100, 14);
+  ctx.fillStyle = '#f2ead8'; ctx.font = '6px "Press Start 2P"'; ctx.fillText('NAUSEA', 111, 162);
+  ctx.strokeStyle = '#f2ead8'; ctx.strokeRect(150.5, 155.5, 54, 7); ctx.fillStyle = '#a8b83a'; ctx.fillRect(152, 157, 51 * fill, 4);
+  const g = ctx.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, 170); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.85)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(10,8,18,.85)'; ctx.fillRect(0, 0, W, 16); ctx.fillStyle = '#ff6a9a'; ctx.font = '6px "Press Start 2P"';
+  ctx.fillText("YOU DON'T REMEMBER GETTING HERE.", 50, 11);
+}
+
+// ===== main loop =====
+const keys = {};
+function update(dt) {
+  if (['listen', 'help', 'spell', 'final'].some(id => $(id).style.display === 'flex')) return;
+  st.t += dt;
+  if (['play', 'drive', 'curb', 'police'].includes(st.mode)) {
+    const before = Math.floor(st.played); st.played += dt;
+    if (Math.floor(st.played) !== before) hud();
+    if (st.played >= GAME_SECONDS) return endGame('time');
+  }
+  if (st.mode === 'drive') return updateDrive(dt);
+  if (st.mode === 'curb') return updateCurb(dt);
+  if (st.mode === 'police') return updatePolice(dt);
+  if (st.mode === 'play' && !st.lock) { st.nudgeT = (st.nudgeT || 0) + dt; if (st.nudgeT > 150) { st.nudgeT = 0; nudge(); } }
+  if (st.mode !== 'play' || st.lock) { st.near = null; $('hint').style.display = 'none'; return; }
+  let dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+  if (st.buzz >= 3 && (dx || dy)) { dx += Math.sin(st.t * 2.3) * .35 * (st.buzz - 2); dy += Math.cos(st.t * 1.7) * .25 * (st.buzz - 2); }
+  const sp = 62 * dt, moving = dx || dy;
+  if (moving) {
+    const len = Math.hypot(dx, dy) || 1, nx = st.x + dx / len * sp, ny = st.y + dy / len * sp;
+    if (free(nx, st.y)) st.x = nx; if (free(st.x, ny)) st.y = ny;
+    st.dir = Math.abs(dy) > Math.abs(dx) ? (dy < 0 ? 'up' : 'down') : st.dir === 'up' && dy < 0 ? 'up' : 'down';
+    st.stepT += dt; if (st.stepT > .14) { st.stepT = 0; st.step = (st.step + 1) % 4; }
+  } else st.step = 0;
+  const s = SC[st.scene];
+  if (s.doors) for (const d of s.doors) if (inR(st.x, st.y, d.r)) return enter(d.to);
+  if (s.exit && inR(st.x, st.y, s.exit.r)) return leave();
+  st.near = (s.acts || []).find(a => inR(st.x, st.y, a.r)) || null;
+  const h = $('hint');
+  if (st.near) { h.textContent = (document.body.classList.contains('phone') ? 'A' : 'SPACE') + ': ' + st.near.l; h.style.display = 'block'; } else h.style.display = 'none';
+}
+function draw() {
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  if (st.mode === 'drive') return drawDrive();
+  if (st.mode === 'curb') return drawCurb();
+  if (st.mode === 'police') return drawPolice();
+  if (st.mode !== 'play') return;
+  const sway = st.buzz >= 3 ? Math.sin(st.t * 1.3) * (st.buzz - 2) * 1.5 : 0;
+  const scene = () => {
+    ctx.drawImage(st.scene === 'exhouse' && st.porchOff ? IMG.exhouse_off : IMG[SC[st.scene].img], 0, 0);
+    const fr = [0, 1, 0, 2][st.step], p = sprite(st.dir, fr);
+    ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(st.x, st.y - 1, 7, 2, 0, 0, 7); ctx.fill();
+    ctx.drawImage(p, Math.round(st.x - 9), Math.round(st.y - 27));
+    if (st.near) { const bx = Math.round(st.x - 3), by = Math.round(st.y - 40); ctx.fillStyle = OUT; ctx.fillRect(bx - 1, by - 1, 8, 11);
+      ctx.fillStyle = '#ffc24a'; ctx.fillRect(bx, by, 6, 9); ctx.fillStyle = OUT; ctx.fillRect(bx + 2, by + 1, 2, 4); ctx.fillRect(bx + 2, by + 6, 2, 2); }
+  };
+  ctx.setTransform(1, 0, 0, 1, Math.round(sway), 0); scene();
+  if (st.buzz >= 4) { ctx.globalAlpha = .3; ctx.setTransform(1, 0, 0, 1, Math.round(sway + 5 + Math.sin(st.t * 2) * 3), 1); scene(); ctx.globalAlpha = 1; }
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+}
+let last = performance.now();
+function loop(now) { const dt = Math.min(.05, (now - last) / 1000); last = now; update(dt); draw(); requestAnimationFrame(loop); }
+
+// ===== input =====
+const KM = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right' };
+function act() {
+  if ($('dlg').style.display === 'block') { if (!dChoice) nextLine(); return; }
+  if (st.mode === 'play' && !st.lock && st.near) st.near.f();
+}
+const OVS = ['title', 'creator', 'listen', 'spell', 'final', 'help'];
+const ovOpen = () => OVS.some(id => $(id).style.display === 'flex');
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (KM[e.code]) { keys[KM[e.code]] = true; e.preventDefault(); }
+  if (e.code === 'Space' || e.code === 'Enter' || e.code === 'KeyE') {
+    if ((dChoice && $('dlg').contains(e.target)) || ovOpen()) return;
+    e.preventDefault(); act();
+  }
+  if (e.code === 'Escape') { closeOv('listen'); closeOv('help'); }
+});
+addEventListener('keyup', e => { if (KM[e.code]) keys[KM[e.code]] = false; });
+// touch stick + A button
+const stick = $('stick'), knob = $('knob'); let stickId = null;
+function stickAt(e) {
+  const r = stick.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), d = Math.hypot(dx, dy);
+  const m = Math.min(d, 40), a = Math.atan2(dy, dx);
+  knob.style.transform = 'translate(' + Math.cos(a) * m + 'px,' + Math.sin(a) * m + 'px)';
+  keys.up = keys.down = keys.left = keys.right = false;
+  if (d < 14) return;
+  keys.right = Math.cos(a) > .38; keys.left = Math.cos(a) < -.38; keys.down = Math.sin(a) > .38; keys.up = Math.sin(a) < -.38;
+}
+function stickOff() { stickId = null; knob.style.transform = ''; keys.up = keys.down = keys.left = keys.right = false; }
+stick.addEventListener('pointerdown', e => { e.preventDefault(); stickId = e.pointerId; try { stick.setPointerCapture(e.pointerId); } catch (_) {} stickAt(e); });
+stick.addEventListener('pointermove', e => { if (e.pointerId === stickId) stickAt(e); });
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => stick.addEventListener(ev, e => { if (e.pointerId === stickId) stickOff(); }));
+const aBtn = $('aBtn');
+aBtn.addEventListener('pointerdown', e => { e.preventDefault(); aBtn.classList.add('down');
+  const sp = $('spell').style.display === 'flex'; if (sp) return cast();
+  if ($('listen').style.display === 'flex') return closeOv('listen');
+  if ($('help').style.display === 'flex') return closeOv('help');
+  const c = $('dlg').querySelector('.choices button'); if ($('dlg').style.display === 'block' && dChoice && c) return (document.activeElement && $('dlg').contains(document.activeElement) ? document.activeElement : c).click();
+  act(); });
+['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => aBtn.addEventListener(ev, () => aBtn.classList.remove('down')));
+document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('.pad')) e.preventDefault(); });
+
+// ===== overlays =====
+function openOv(id) { $(id).style.display = 'flex'; }
+function closeOv(id) { $(id).style.display = 'none'; }
+function nudge() {
+  const b = $('listenBtn'), tt = $('toast'); b.classList.remove('pulse'); void b.offsetWidth; b.classList.add('pulse');
+  tt.style.display = 'block'; clearTimeout(nudge.t); nudge.t = setTimeout(() => { tt.style.display = 'none'; b.classList.remove('pulse'); }, 6000);
+}
+$('toast').onclick = e => { e.currentTarget.style.display = 'none'; e.currentTarget.blur(); openListen(); };
+function openListen() {
+  $('toast').style.display = 'none';
+  $('plats').innerHTML = LINKS.map(l => l[1] ? '<a class="plat" href="' + l[1] + '" target="_blank" rel="noopener">' + l[0] + '<span>Open</span></a>'
+    : '<div class="plat" aria-disabled="true">' + l[0] + '<span>Link coming soon</span></div>').join('');
+  openOv('listen'); $('lClose').focus();
+}
+$('listenBtn').onclick = e => { e.currentTarget.blur(); openListen(); }; $('tListen').onclick = openListen; $('lClose').onclick = () => closeOv('listen');
+$('howBtn').onclick = () => { openOv('help'); $('helpClose').focus(); }; $('helpClose').onclick = () => closeOv('help');
+
+// spell
+function norm(s) { return String(s || '').toLowerCase().replace(/[^a-z]/g, ''); }
+function lev(a, b) { const d = []; for (let i = 0; i <= a.length; i++) { d[i] = [i]; } for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length]; }
+let tries = 0;
+function openSpell() { st.lock = true; tries = 0; $('spellIn').value = ''; $('spellMsg').textContent = 'Type the words. Press CAST or Enter.'; $('spellMsg').style.color = '';
+  $('sListen').style.display = 'inline-block'; $('sListen').textContent = 'NEED THE WORDS? LISTEN'; openOv('spell'); setTimeout(() => $('spellIn').focus(), 50); }
+function cast() {
+  const v = norm($('spellIn').value);
+  if (v && lev(v, SPELL) <= 3) { closeOv('spell'); sfx('win'); endGame('win'); return; }
+  tries++; $('spellMsg').textContent = 'The shadows thicken. (' + tries + (tries === 1 ? ' try)' : ' tries)'); $('spellMsg').style.color = '#ff6a9a';
+  $('sListen').style.display = 'inline-block'; $('sListen').textContent = 'THE ANSWER IS IN THE LYRICS';
+}
+$('castBtn').onclick = cast; $('spellIn').addEventListener('keydown', e => { if (e.key === 'Enter') cast(); });
+$('sListen').onclick = openListen; $('sClose').onclick = () => { closeOv('spell'); st.lock = false; };
+$('eListen').onclick = openListen;
+$('againBtn').onclick = () => { closeOv('final'); st.mode = 'title'; st.lock = false; openOv('title'); };
+
+
+// ===== the end + share card =====
+const CAP_WIN = 'I won Drunk, by Eli Lie and all I got was this amazing single..';
+const CAP_TIME = 'I survived a night of Drunk, by Eli Lie and all I got was this amazing single..';
+let cardURL = '', cardBlob = null, shareText = '';
+function endGame(kind) {
+  if (st.mode === 'over') return;
+  const won = kind === 'win', secs = won ? st.played : GAME_SECONDS;
+  st.mode = 'over'; st.lock = true; dq = []; dChoice = null; dDone = null;
+  ['dlg', 'hint', 'toast'].forEach(id => $(id).style.display = 'none'); closeOv('spell');
+  keys.up = keys.down = keys.left = keys.right = false; hud();
+  if (won) buildFinal(true, secs);
+  else { sfx('blackout'); fade('LAST CALL.\n\nThe bar lights come up. The night is over.', 1600, () => buildFinal(false, secs)); }
+}
+async function buildFinal(won, secs) {
+  $('fTitle').textContent = won ? 'THE SHADOWS LIFT.' : 'LAST CALL.';
+  $('fBody').innerHTML = won
+    ? '<div style="color:#ffb0c8;font-style:italic">"Clearing of the sky. Color in the clouds."</div><div class="attr">' + ATTR + '</div><div style="margin-top:8px">You put the box back on the shelf with the lid open. The couch is just a couch again.</div>'
+    : '<div>Six minutes is all the night gives you, and the box is still in the closet.</div><div class="tip" style="margin-top:6px">Next time, listen to the song first. The answer is in the lyrics.</div>';
+  $('fTime').textContent = mmss(secs); $('fDrinks').textContent = st.drinks;
+  const cap = won ? CAP_WIN : CAP_TIME;
+  shareText = cap + ' Time ' + mmss(secs) + ', ' + st.drinks + (st.drinks === 1 ? ' drink.' : ' drinks.');
+  buildShares();
+  openOv('final'); $('cardImg').removeAttribute('src');
+  const out = await makeCard(won, secs, cap);
+  cardURL = out.url; cardBlob = out.blob; $('cardImg').src = cardURL;
+  if (!document.body.classList.contains('phone')) setTimeout(() => $('shareBtn').focus({ preventScroll: true }), 50);
+}
+function pat(x, ox, oy, rows, col) { rows.forEach((r, j) => [...r].forEach((ch, i) => { if (ch === 'X') { x.fillStyle = col; x.fillRect(ox + i, oy + j, 1, 1); } })); }
+function circ(x, cx, cy, r, col) { x.fillStyle = col; for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) if (i * i + j * j <= r * r + r * .6) x.fillRect(cx + i, cy + j, 1, 1); }
+function wrap(y, text, x0, y0, maxW, lh) {
+  const words = text.split(' '); let line = '', yy = y0;
+  for (const w of words) { const test = line ? line + ' ' + w : w; if (y.measureText(test).width > maxW && line) { y.fillText(line, x0, yy); line = w; yy += lh; } else line = test; }
+  if (line) { y.fillText(line, x0, yy); yy += lh; } return yy;
+}
+async function makeCard(won, secs, cap) {
+  try { await Promise.race([Promise.all([document.fonts.load('20px "Press Start 2P"'), document.fonts.load('30px VT323')]), new Promise(r => setTimeout(r, 1500))]); } catch (_) {}
+  const LW = 216, LH = 270, S = 5, lo = document.createElement('canvas'); lo.width = LW; lo.height = LH;
+  const x = lo.getContext('2d'); x.imageSmoothingEnabled = false;
+  const R = (a, b, w, h, c) => { x.fillStyle = c; x.fillRect(a, b, w, h); };
+  const bands = ['#0f0d1a', '#161230', '#1e1640', '#2a1a4e', '#3e1e58', '#5a2460', '#7a2c62'];
+  bands.forEach((c, i) => { R(0, i * 34, LW, 34, c); if (i) for (let yy = i * 34; yy < i * 34 + 3; yy++) for (let xx = (yy % 2); xx < LW; xx += 2) R(xx, yy, 1, 1, bands[i - 1]); });
+  [[14, 20], [40, 60], [70, 12], [8, 96], [56, 110], [30, 140], [80, 84], [20, 176], [64, 160], [210, 8], [6, 220]].forEach(p => R(p[0], p[1], 1, 1, '#f4f0e6'));
+  circ(x, 66, 30, 9, '#f4ecd0'); circ(x, 70, 27, 8, bands[0]); 
+  R(0, 238, LW, 32, '#3a2a22'); for (let yy = 242; yy < LH; yy += 6) R(0, yy, LW, 1, '#2a1e18');
+  // the player, holding the phone
+  const lk = st.look, spr = toCanvas(pixels(lk, 'down', 0), 18, 28);
+  x.fillStyle = 'rgba(0,0,0,.45)'; x.fillRect(16, 236, 44, 4);
+  x.drawImage(spr, 10, 154, 54, 84);
+  R(55, 188, 34, 10, OUT); R(56, 189, 32, 8, lk.shirt); R(56, 189, 32, 2, lit(lk.shirt, .25));
+  // phone
+  const px = 90, py = 18, pw = 120, ph = 226, sx = px + 5, sy = py + 12, sw = pw - 10, sh = ph - 22;
+  R(px - 1, py - 1, pw + 2, ph + 2, OUT); R(px, py, pw, ph, '#1c1c24'); R(px + 1, py + 1, pw - 2, 1, '#4a4a58');
+  R(px + pw / 2 - 12, py + 4, 24, 4, '#000'); R(sx, sy, sw, sh, '#fbf8f0');
+  // post header
+  circ(x, sx + 7, sy + 7, 5, '#ff6a9a'); circ(x, sx + 7, sy + 7, 4, '#fbf8f0'); circ(x, sx + 7, sy + 7, 3, lk.skin);
+  R(sx + 4, sy + 3, 7, 2, lk.hs === 4 ? lk.skin : lk.hair);
+  R(sx + sw - 9, sy + 7, 1, 1, '#1c1c24'); R(sx + sw - 6, sy + 7, 1, 1, '#1c1c24'); R(sx + sw - 3, sy + 7, 1, 1, '#1c1c24');
+  // post picture: the title art, cropped square
+  if (IMG.title.complete && IMG.title.naturalWidth) x.drawImage(IMG.title, 150, 30, 280, 270, sx, sy + 15, sw, 104);
+  else R(sx, sy + 15, sw, 104, '#3e1e58');
+  // action icons
+  const iy = sy + 123;
+  pat(x, sx + 3, iy, ['.XX.XX.', 'XXXXXXX', 'XXXXXXX', '.XXXXX.', '..XXX..', '...X...'], '#e0304a');
+  pat(x, sx + 14, iy, ['.XXXXX.', 'X.....X', 'X.....X', 'X.....X', '.XXXXX.', 'XX.....'], '#1c1c24');
+  pat(x, sx + 25, iy, ['XXXXXXX', '.X...X.', '..X.X..', '...X...', '...X...', '...X...'], '#1c1c24');
+  pat(x, sx + sw - 9, iy, ['XXXXX', 'X...X', 'X...X', 'X...X', 'X.X.X', 'XX.XX'], '#1c1c24');
+  // the hand gripping the phone
+  R(83, 176, 14, 26, OUT); R(84, 177, 12, 24, lk.skin); R(84, 177, 12, 2, lit(lk.skin, .25));
+  [182, 188, 194].forEach(yy => R(92, yy, 7, 4, lk.skin)); [182, 188, 194].forEach(yy => R(92, yy + 3, 7, 1, mul(lk.skin, .75)));
+  R(99, 181, 1, 17, OUT);
+  // scale up, then sharp text
+  const c = document.createElement('canvas'); c.width = LW * S; c.height = LH * S; const y = c.getContext('2d');
+  y.imageSmoothingEnabled = false; y.drawImage(lo, 0, 0, LW * S, LH * S); y.textBaseline = 'top';
+  const T = (s, f, col, a, b) => { y.font = f; y.fillStyle = '#000'; y.fillText(s, a + 4, b + 4); y.fillStyle = col; y.fillText(s, a, b); };
+  T('DRUNK', '64px "Press Start 2P"', '#ffc24a', 30, 230);
+  T('BY ELI LIE', '24px "Press Start 2P"', '#f2ead8', 32, 316);
+  T('TIME', '20px "Press Start 2P"', '#c8c0e0', 32, 400); T(mmss(secs), '52px "Press Start 2P"', '#ffc24a', 32, 432);
+  T('DRINKS', '20px "Press Start 2P"', '#c8c0e0', 32, 530); T(String(st.drinks), '52px "Press Start 2P"', '#ff6a9a', 32, 562);
+  y.font = '30px VT323'; y.fillStyle = '#1c1c24'; y.fillText('player.one', (sx + 15) * S, (sy + 2) * S + 4);
+  y.font = '31px VT323'; y.fillStyle = '#1c1c24';
+  let yy = wrap(y, cap, (sx + 3) * S, (sy + 133) * S, (sw - 6) * S, 30);
+  y.font = '13px "Press Start 2P"'; y.fillStyle = '#b05a10'; y.fillText('TIME ' + mmss(secs) + '  DRINKS ' + st.drinks, (sx + 3) * S, yy + 6);
+  y.font = '28px VT323'; y.fillStyle = '#3a5aa8'; y.fillText('#DrunkTheGame #EliLie', (sx + 3) * S, yy + 30);
+  y.font = '13px "Press Start 2P"'; y.fillStyle = '#c8c0e0'; y.textAlign = 'center';
+  y.fillText('PLAY: ' + SITE.replace(/^https?:\/\//, ''), LW * S / 2, (py + ph + 7) * S);
+  const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+  return { url: c.toDataURL('image/png'), blob };
+}
+function buildShares() {
+  const u = encodeURIComponent(SITE), tx = encodeURIComponent(shareText), both = encodeURIComponent(shareText + ' Play it: ' + SITE);
+  const list = [['TEXT A FRIEND', 'sms:?&body=' + both], ['WHATSAPP', 'https://wa.me/?text=' + both], ['X', 'https://twitter.com/intent/tweet?text=' + tx + '&url=' + u],
+    ['FACEBOOK', 'https://www.facebook.com/sharer/sharer.php?u=' + u], ['THREADS', 'https://www.threads.net/intent/post?text=' + both], ['BLUESKY', 'https://bsky.app/intent/compose?text=' + both],
+    ['REDDIT', 'https://www.reddit.com/submit?url=' + u + '&title=' + tx], ['LINKEDIN', 'https://www.linkedin.com/sharing/share-offsite/?url=' + u], ['EMAIL', 'mailto:?subject=' + encodeURIComponent('I played Drunk by Eli Lie') + '&body=' + both]];
+  $('shares').innerHTML = list.map(l => '<a class="btn" target="_blank" rel="noopener" href="' + l[1] + '">' + l[0] + '</a>').join('');
+}
+function flash(msg) { const tip = $('saveTip'), old = tip.dataset.base || tip.textContent; tip.dataset.base = old; tip.textContent = msg; tip.style.color = 'var(--amber)';
+  clearTimeout(flash.t); flash.t = setTimeout(() => { tip.textContent = old; tip.style.color = ''; }, 5000); }
+$('shareBtn').onclick = async () => {
+  if (!cardBlob) return;
+  const f = new File([cardBlob], 'drunk-eli-lie.png', { type: 'image/png' });
+  try {
+    if (navigator.canShare && navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], text: shareText + ' Play it: ' + SITE }); return; }
+    if (navigator.share) { await navigator.share({ text: shareText, url: SITE }); return; }
+  } catch (e) { if (e && e.name === 'AbortError') return; }
+  flash(document.body.classList.contains('phone') ? "Sharing isn't available here. Press and hold the picture to save it, then share it from your photos." : "Sharing isn't available here. Right-click the picture to save it, or use a button below.");
+};
+let dlNS = null;
+if (window.claude && window.claude.use) window.claude.use('downloads').then(ns => { dlNS = ns; }).catch(() => {});
+$('saveBtn').onclick = async () => {
+  if (!cardBlob) return;
+  if (dlNS) {
+    try { const r = await dlNS.save({ filename: 'drunk-eli-lie.png', data: cardBlob }); if (r && r.status === 'saved') flash('Saved. Now post it anywhere.'); return; }
+    catch (e) { if (e && (e.code === 'declined' || e.code === 'rate_limited')) return; }
+  } else if (!window.claude) {
+    try { const a = document.createElement('a'); a.href = cardURL; a.download = 'drunk-eli-lie.png'; document.body.appendChild(a); a.click(); a.remove(); return; } catch (_) {}
+  }
+  flash(document.body.classList.contains('phone') ? 'Press and hold the picture and choose Save to Photos.' : 'Right-click the picture and choose Save Image As.');
+};
+$('copyBtn').onclick = () => {
+  const s = shareText + ' Play it: ' + SITE;
+  try { navigator.clipboard.writeText(s).then(() => flash('Copied. Paste it anywhere.'), () => flash('Copy blocked. The link is ' + SITE)); } catch (_) { flash('Copy blocked. The link is ' + SITE); }
+};
+
+// ===== character creator =====
+const C = { skins: ['#f6d3b3', '#e8b48a', '#c98d5f', '#a0673f', '#6f4428', '#4a2c1a'], hcs: ['#2a1e18', '#5a3820', '#b8642a', '#e8c060', '#c8c2b8'],
+  hs: ['Short', 'Long', 'Mohawk', 'Buzzed'], outs: [['Tee + jeans', '#e8e0cc', '#3d5fa8'], ['Flannel', '#c0392b', '#34405a'], ['Leather jacket', '#2a2a32', '#26262e'], ['Thrift suit', '#6a4fa0', '#4a3576']],
+  face: ['None', 'Stubble', 'Beard', 'Mustache'], hats: ['None', 'Beanie', 'Trucker cap', 'Cowboy hat'] };
+const cs = { skin: 2, hs: 0, hc: 1, out: 1, face: 1, hat: 0, eli: false };
+function lookFrom() {
+  if (cs.eli) return { skin: C.skins[cs.skin], hair: '#2a1e18', shirt: '#1e1e26', pants: '#16161a', outfit: 4, facial: 4, hs: 4, hat: 0, glasses: true };
+  const o = C.outs[cs.out]; return { skin: C.skins[cs.skin], hair: C.hcs[cs.hc], shirt: o[1], pants: o[2], outfit: cs.out, facial: cs.face, hs: cs.hs, hat: cs.hat, glasses: false };
+}
+function renderCreator() {
+  const sw = (id, arr, k, names) => { const r = $(id); r.querySelectorAll('button').forEach(b => b.remove());
+    arr.forEach((c, i) => { const b = document.createElement('button'); b.className = 'sw' + (cs[k] === i && (k === 'skin' || !cs.eli) ? ' on' : ''); b.style.background = c;
+      b.setAttribute('aria-label', names[i]); b.onclick = () => { cs[k] = i; if (k !== 'skin') cs.eli = false; renderCreator(); }; r.appendChild(b); }); };
+  const op = (id, arr, k) => { const r = $(id); r.querySelectorAll('button').forEach(b => b.remove());
+    arr.forEach((l, i) => { const b = document.createElement('button'); const on = cs[k] === i && !cs.eli; b.className = 'opt' + (on ? ' on' : ''); b.textContent = l;
+      b.setAttribute('aria-pressed', on); b.onclick = () => { cs[k] = i; cs.eli = false; renderCreator(); }; r.appendChild(b); }); };
+  sw('rSkin', C.skins, 'skin', C.skins.map((_, i) => 'Skin tone ' + (i + 1)));
+  op('rHair', C.hs, 'hs'); sw('rHc', C.hcs, 'hc', ['Black', 'Brown', 'Auburn', 'Blond', 'Gray']);
+  op('rOut', C.outs.map(o => o[0]), 'out'); op('rFace', C.face, 'face'); op('rHat', C.hats, 'hat');
+  $('eli').className = 'btn' + (cs.eli ? ' on' : ''); $('eli').setAttribute('aria-pressed', cs.eli);
+  st.look = lookFrom();
+  const pv = $('pv').getContext('2d'); pv.clearRect(0, 0, 18, 28); pv.drawImage(toCanvas(pixels(st.look, 'down', 0), 18, 28), 0, 0);
+}
+$('eli').onclick = () => { cs.eli = !cs.eli; renderCreator(); };
+$('rndBtn').onclick = () => { const r = n => Math.floor(Math.random() * n); Object.assign(cs, { skin: r(6), hs: r(4), hc: r(5), out: r(4), face: r(4), hat: r(4), eli: false }); renderCreator(); };
+$('newBtn').onclick = () => { startMusic(); closeOv('title'); renderCreator(); openOv('creator'); };
+$('startBtn').onclick = () => {
+  st.look = lookFrom(); closeOv('creator');
+  Object.assign(st, { mode: 'intro', courage: 1, buzz: 3, key: false, watched: false, porchOff: false, knocks: 0, played: 0, drinks: 0 }); hud();
+  go('map', MAPSPAWN.home[0], MAPSPAWN.home[1]);
+  const f = $('fade'); f.style.transition = 'none'; f.style.opacity = 1; f.innerHTML = '<span>"Drunk and on my way home,\ncall you just to say I\'m coming over baby."</span><span class="fattr">' + ATTR + '</span>'; st.lock = true;
+  setTimeout(() => { f.style.transition = ''; startDrive('home', false, true); f.style.opacity = 0; }, 3600);
+};
+
+// ===== audio =====
+let AC = null, master = null, musicOn = true, seqTimer = null, bgEl = null, jbEl = null, jbUntil = 0;
+const NOTE = n => { if (!n) return 0; const m = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[n[0]] + (n[1] === '#' ? 1 : 0); const o = +n[n.length - 1]; return 440 * Math.pow(2, (m + 12 * (o + 1) - 69) / 12); };
+const BG = { bpm: 84, lead: 'A4 . C5 E5 D5 . C5 . A4 . G4 . E4 . . . F4 . A4 C5 B4 . A4 . G4 . E4 . A4 . . .'.split(' '), bass: 'A2 A2 F2 F2 C3 C3 E2 E2'.split(' ') };
+const JB = { bpm: 112, lead: 'E5 E5 D5 C5 A4 . C5 D5 E5 . G5 . E5 D5 C5 . A4 A4 G4 A4 C5 . D5 . C5 . A4 . . . . .'.split(' '), bass: 'A2 A2 C3 C3 F2 F2 E2 E2'.split(' ') };
+function tone(f, t, d, type, v) { if (!f) return; const o = AC.createOscillator(), g = AC.createGain(); o.type = type; o.frequency.value = f;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0005, t + d); o.connect(g); g.connect(master); o.start(t); o.stop(t + d + .02); }
+function startMusic() {
+  if (AUDIO.background) { if (!bgEl) { bgEl = new Audio(AUDIO.background); bgEl.loop = true; bgEl.volume = .5; } if (musicOn) bgEl.play().catch(() => {}); }
+  try { if (!AC) { AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.gain.value = .5; master.connect(AC.destination); } AC.resume(); } catch (e) { return; }
+  if (AUDIO.background || seqTimer) return;
+  let step = 0, tNext = AC.currentTime + .1;
+  seqTimer = setInterval(() => {
+    while (tNext < AC.currentTime + .25) {
+      const jb = performance.now() < jbUntil && !AUDIO.jukebox, P = jb ? JB : BG, dur = 30 / P.bpm;
+      if (musicOn) { const n = P.lead[step % P.lead.length]; if (n !== '.') tone(NOTE(n), tNext, dur * 1.6, jb ? 'square' : 'triangle', jb ? .07 : .09);
+        if (step % 2 === 0) tone(NOTE(P.bass[(step / 2 | 0) % P.bass.length]), tNext, dur * 1.8, 'triangle', .12); }
+      tNext += dur; step++;
+    }
+  }, 60);
+}
+function stopMusic() { if (bgEl) bgEl.pause(); }
+function playJukebox() {
+  if (bgEl) { bgEl.currentTime = 0; if (musicOn) bgEl.play().catch(() => {}); }
+  else jbUntil = performance.now() + 20000;
+}
+function sfx(k) {
+  if (!AC || !musicOn) return; const t = AC.currentTime;
+  if (k === 'drink') { tone(330, t, .08, 'square', .08); tone(440, t + .08, .08, 'square', .08); tone(660, t + .16, .15, 'square', .08); }
+  if (k === 'key') { [523, 659, 784, 1046].forEach((f, i) => tone(f, t + i * .09, .2, 'square', .08)); }
+  if (k === 'crash') { tone(110, t, .5, 'sawtooth', .2); tone(80, t + .1, .6, 'sawtooth', .2); }
+  if (k === 'blackout') { [392, 330, 262, 196].forEach((f, i) => tone(f, t + i * .18, .3, 'triangle', .12)); }
+  if (k === 'click') { tone(1200, t, .03, 'square', .06); }
+  if (k === 'knock') { tone(140, t, .08, 'square', .15); tone(140, t + .18, .08, 'square', .15); tone(140, t + .36, .08, 'square', .15); }
+  if (k === 'siren') { for (let i = 0; i < 6; i++) { const o = AC.createOscillator(), g = AC.createGain(); o.type = 'square'; o.frequency.setValueAtTime(650, t + i * .7); o.frequency.linearRampToValueAtTime(950, t + i * .7 + .35); o.frequency.linearRampToValueAtTime(650, t + i * .7 + .7);
+    g.gain.setValueAtTime(.05, t + i * .7); g.gain.linearRampToValueAtTime(0.0001, t + i * .7 + .7); o.connect(g); g.connect(master); o.start(t + i * .7); o.stop(t + i * .7 + .72); } }
+  if (k === 'win') { [262, 330, 392, 523, 659, 784].forEach((f, i) => tone(f, t + i * .12, .4, 'square', .07)); }
+}
+$('soundBtn').onclick = e => { e.currentTarget.blur(); musicOn = !musicOn; $('soundBtn').textContent = musicOn ? 'SOUND ON' : 'SOUND OFF';
+  if (bgEl) musicOn ? bgEl.play().catch(() => {}) : bgEl.pause(); if (jbEl && !musicOn) jbEl.pause(); if (!AC && musicOn) startMusic(); };
+
+// ===== layout =====
+function fit() {
+  const phone = document.body.classList.contains('phone'), land = innerWidth > innerHeight, HUD = 44, B = 8;
+  let aw = innerWidth - 24, ah = innerHeight - 24 - HUD - B;
+  if (phone && land) aw = innerWidth - 2 * 150 - 60;
+  else if (phone) ah -= 190;
+  aw -= B;
+  const f = Math.max(.8, Math.min(aw / W, ah / H));
+  const s = (!phone && f >= 2) ? Math.floor(f) : f;
+  cv.style.width = W * s + 'px'; cv.style.height = H * s + 'px';
+  const sc = $('screen'); sc.style.width = W * s + B + 'px'; sc.style.setProperty('--s', s.toFixed(2));
+  $('hud').style.fontSize = ''; $('loc').style.display = W * s < 520 ? 'none' : '';
+  $('soundBtn').textContent = W * s < 420 ? (musicOn ? 'SND' : 'MUTE') : (musicOn ? 'SOUND ON' : 'SOUND OFF');
+}
+addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 250)); fit();
+// ===== landing =====
+function choose(mode) {
+  document.body.classList.toggle('phone', mode === 'phone'); document.body.classList.toggle('desk', mode !== 'phone');
+  try { localStorage.setItem('drunk_mode', mode); } catch (_) {}
+  $('helpText').innerHTML = mode === 'phone'
+    ? 'Move: drag the pad on the left.<br>Talk, use and skip: the A button on the right, or tap the text box.<br><br>'
+    : 'Move: arrow keys or WASD.<br>Talk, use and skip: SPACE or ENTER.<br><br>';
+  $('helpText').innerHTML += 'Drinks give you Courage to do things, and Buzz. Buzz 5 means a blackout, and you won\'t pick where you wake up. Walking between places lowers Buzz by 1.<br><br>You have 6 minutes before last call. Find out what\'s in the closet.';
+  $('saveTip').textContent = mode === 'phone' ? 'Press and hold the picture to save it to your photos.' : 'Right-click the picture to save or copy it.';
+  $('landing').style.display = 'none'; startMusic(); fit();
+  if (mode === 'phone') { try { const el = document.documentElement, p = el.requestFullscreen && el.requestFullscreen({ navigationUI: 'hide' });
+    if (p && p.then) p.then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {})).catch(() => {}); } catch (_) {} }
+  $('newBtn').focus();
+}
+$('pickPhone').onclick = () => choose('phone'); $('pickDesk').onclick = () => choose('desk');
+$('uprightBtn').onclick = () => { document.body.classList.add('upright'); fit(); };
+{ let pref = null; try { pref = localStorage.getItem('drunk_mode'); } catch (_) {}
+  const guess = pref || (matchMedia('(pointer:coarse)').matches ? 'phone' : 'desk');
+  $(guess === 'phone' ? 'pickPhone' : 'pickDesk').classList.add('rec');
+  $(guess === 'phone' ? 'pickPhone' : 'pickDesk').insertAdjacentHTML('afterbegin', '<em>' + (pref ? 'LAST TIME' : 'BEST FOR THIS DEVICE') + '</em>'); }
+st.look = lookFrom(); hud(); openOv('title');
+requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
