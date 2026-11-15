@@ -112,9 +112,11 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 .plat:hover{border-color:var(--amber)}
 #spell .pop img{width:100%;max-height:calc(60px + 40px*var(--s));object-fit:cover;image-rendering:pixelated;border:2px solid #000}
 #spellIn{height:46px;padding:0 10px;background:#000;border:3px solid var(--line);color:var(--ink);font-size:22px;width:100%}
-#final .pop{width:min(900px,100%);flex-direction:row;flex-wrap:wrap;align-items:flex-start}
-#final .card{flex:1 1 220px;max-width:340px;display:flex;flex-direction:column;gap:6px}
-#final .card img{width:100%;border:3px solid #000;image-rendering:pixelated;-webkit-touch-callout:default;user-select:auto}
+#final .pop{width:min(900px,100%);display:grid;grid-template-columns:auto minmax(0,1fr);gap:14px;align-items:start}
+@media(orientation:portrait) and (max-width:620px){#final .pop{grid-template-columns:minmax(0,1fr)}#final .card{align-items:center}#final .card img{width:min(100%,360px)}}
+#final .card{flex:0 1 auto;display:flex;flex-direction:column;align-items:flex-start;gap:6px;max-width:100%}
+#final .card img{display:block;aspect-ratio:3/4;width:calc(110px * var(--s) + 20px);max-width:100%;height:auto;object-fit:contain;background:#0f0d1a;border:3px solid #000;image-rendering:pixelated;-webkit-touch-callout:default;user-select:auto}
+#saveTip{width:0;min-width:100%;font-size:17px}
 #final .info{flex:1 1 260px;display:flex;flex-direction:column;gap:9px}
 #final .stats{display:flex;gap:10px;flex-wrap:wrap}
 #final .stat{flex:1 1 90px;padding:8px;background:#000;border:2px solid var(--line);font-family:'Press Start 2P',monospace;font-size:8px;color:var(--dim);line-height:1.8}
@@ -147,7 +149,7 @@ body.phone #creator,body.phone #listen,body.phone #spell,body.phone #final,body.
   padding:max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
 body.phone #final{background:rgba(10,8,18,.97)}body.phone #creator{background:var(--bg)}
 body.phone #listen,body.phone #help{z-index:16}
-@media(orientation:landscape){body.phone #final .card{max-width:300px}body.phone #final .pop{max-height:100%}}
+@media(orientation:landscape){body.phone #final .pop{max-height:100%;flex-wrap:nowrap}body.phone #final .card img{width:auto;height:calc(100vh - 130px);max-height:calc(100dvh - 130px)}body.phone #final .info{overflow:auto;max-height:calc(100dvh - 60px)}}
 @media(prefers-reduced-motion:reduce){#fade{transition:none}#listenBtn.pulse{animation:none;outline:3px solid var(--amber)}#rotate .ph{animation:none;transform:rotate(-90deg)}}
 </style>
 </head>
@@ -853,10 +855,12 @@ function wrap(y, text, x0, y0, maxW, lh) {
 }
 async function makeCard(won, secs, cap) {
   try { await Promise.race([Promise.all([document.fonts.load('20px "Press Start 2P"'), document.fonts.load('30px VT323')]), new Promise(r => setTimeout(r, 1500))]); } catch (_) {}
-  const LW = 216, LH = 270, S = 5, lo = document.createElement('canvas'); lo.width = LW; lo.height = LH;
+  const LW = 216, LH = 288, S = 5, PAD = 9, lo = document.createElement('canvas'); lo.width = LW; lo.height = LH; // 1080 x 1440 (3:4)
   const x = lo.getContext('2d'); x.imageSmoothingEnabled = false;
   const R = (a, b, w, h, c) => { x.fillStyle = c; x.fillRect(a, b, w, h); };
   const bands = ['#0f0d1a', '#161230', '#1e1640', '#2a1a4e', '#3e1e58', '#5a2460', '#7a2c62'];
+  R(0, 0, LW, LH, '#0f0d1a'); R(0, 247, LW, LH - 247, '#3a2a22'); for (let yy = 251; yy < LH; yy += 6) R(0, yy, LW, 1, '#2a1e18');
+  x.translate(0, PAD);
   bands.forEach((c, i) => { R(0, i * 34, LW, 34, c); if (i) for (let yy = i * 34; yy < i * 34 + 3; yy++) for (let xx = (yy % 2); xx < LW; xx += 2) R(xx, yy, 1, 1, bands[i - 1]); });
   [[14, 20], [40, 60], [70, 12], [8, 96], [56, 110], [30, 140], [80, 84], [20, 176], [64, 160], [210, 8], [6, 220]].forEach(p => R(p[0], p[1], 1, 1, '#f4f0e6'));
   circ(x, 66, 30, 9, '#f4ecd0'); circ(x, 70, 27, 8, bands[0]); 
@@ -889,7 +893,7 @@ async function makeCard(won, secs, cap) {
   R(99, 181, 1, 17, OUT);
   // scale up, then sharp text
   const c = document.createElement('canvas'); c.width = LW * S; c.height = LH * S; const y = c.getContext('2d');
-  y.imageSmoothingEnabled = false; y.drawImage(lo, 0, 0, LW * S, LH * S); y.textBaseline = 'top';
+  y.imageSmoothingEnabled = false; y.drawImage(lo, 0, 0, LW * S, LH * S); y.textBaseline = 'top'; y.translate(0, PAD * S);
   const T = (s, f, col, a, b) => { y.font = f; y.fillStyle = '#000'; y.fillText(s, a + 4, b + 4); y.fillStyle = col; y.fillText(s, a, b); };
   T('DRUNK', '64px "Press Start 2P"', '#ffc24a', 30, 230);
   T('BY ELI LIE', '24px "Press Start 2P"', '#f2ead8', 32, 316);
