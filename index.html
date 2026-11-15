@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0a0812">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Drunk">
+<link rel="apple-touch-icon" href="img/icon-192.png">
+<link rel="manifest" href="manifest.json">
 <title>Drunk: the game</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <style>
@@ -25,6 +31,21 @@ button,input{font:inherit}
 body.phone .pad{display:flex}
 body.phone #app{grid-template-areas:"s s" "l r";gap:14px}
 @media(orientation:landscape){body.phone #app{grid-template-areas:"l s r";gap:clamp(8px,2vw,22px)}}
+body.land #app{gap:12px;place-items:stretch;align-content:stretch}
+body.land #screen{align-self:center}
+body.land .pad{flex-direction:column;justify-content:space-between;align-items:center;padding:2px 0}
+body.land #padL{width:150px}body.land #padR{width:110px}
+body.land #stick{width:122px;height:122px}body.land #knob{width:50px;height:50px;margin:-25px 0 0 -25px}
+body.land #aBtn{width:84px;height:84px}
+body.land #hud{flex-wrap:wrap;height:auto;width:150px;gap:6px 6px;padding:8px;border:4px solid #000;outline:3px solid var(--line);box-shadow:inset 0 2px 0 #2e2850}
+body.land #hud .lab{width:52px}body.land #hud .lab[style]{margin-left:0!important}
+body.land #loc{margin-left:0;width:100%;display:block!important;color:var(--dim)}
+body.land #clock{font-size:9px}
+#padRtop{display:flex;flex-direction:column;gap:8px;align-items:stretch;width:100%}
+#padRtop:empty{display:none}
+body.land #padRtop .hbtn{height:36px;width:100%;font-size:8px}
+body.land #title .menu{flex-direction:row;left:50%;transform:translateX(-50%);bottom:4%;padding:8px}
+body.land .padlab{display:none}
 #stick{position:relative;width:136px;height:136px;border-radius:50%;background:radial-gradient(circle,#241e3a 0 55%,#1a1530 56%);border:4px solid #000;box-shadow:inset 0 3px 0 rgba(255,255,255,.08),0 0 0 3px var(--line);touch-action:none}
 #stick i{position:absolute;color:var(--dim);font-style:normal;font-family:'Press Start 2P',monospace;font-size:11px}
 #knob{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:#3a3456;border:4px solid #000;box-shadow:inset 0 4px 0 rgba(255,255,255,.18)}
@@ -42,7 +63,7 @@ body.phone #app{grid-template-areas:"s s" "l r";gap:14px}
 .hbtn{height:30px;padding:0 7px;border:2px solid #000;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;color:#0f0d1a}
 #listenBtn{background:var(--pink);box-shadow:inset 0 2px 0 #ffc0d4}#soundBtn{background:#2a2244;color:var(--ink)}
 canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
-.ov{position:absolute;left:0;right:0;bottom:0;top:44px;display:none}
+.ov{position:absolute;left:0;right:0;bottom:0;top:var(--hudH,44px);display:none}
 .box{background:var(--panel);border:4px solid var(--ink);box-shadow:0 0 0 4px #000,6px 6px 0 4px #000}
 #dlg{position:absolute;left:8px;right:8px;bottom:8px;padding:calc(6px + 3px*var(--s)) calc(8px + 3px*var(--s));display:none;font-size:calc(11px + 4.6px*var(--s));line-height:1.05;max-height:calc(100% - 16px);overflow:auto}
 #dlg .who{font-family:'Press Start 2P',monospace;font-size:calc(6px + 1.5px*var(--s));color:var(--amber);margin-bottom:6px}
@@ -50,7 +71,7 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 .attr{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--dim);margin-top:6px;line-height:1.6;font-style:normal}
 #fade .fly{display:block;margin-top:14px;color:#ffb0c8}
 #fade .fattr{display:block;margin-top:12px;font-size:7px;color:var(--dim)}
-#toast{position:absolute;right:8px;top:50px;max-width:250px;padding:8px 10px;background:var(--pink);color:#0f0d1a;border:3px solid #000;box-shadow:4px 4px 0 #000;font-family:'Press Start 2P',monospace;font-size:8px;line-height:1.6;cursor:pointer;display:none}
+#toast{position:absolute;right:8px;top:calc(var(--hudH,44px) + 6px);max-width:250px;padding:8px 10px;background:var(--pink);color:#0f0d1a;border:3px solid #000;box-shadow:4px 4px 0 #000;font-family:'Press Start 2P',monospace;font-size:8px;line-height:1.6;cursor:pointer;display:none}
 @keyframes pulse{50%{transform:scale(1.15)}}
 #listenBtn.pulse{animation:pulse .5s 6}
 #dlg .more{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--dim);text-align:right;margin-top:6px}
@@ -60,7 +81,7 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 .btn.hot{background:var(--amber);color:#0f0d1a;box-shadow:inset 0 3px 0 #fff0b0,inset 0 -4px 0 #c0601a}
 .btn.pink{background:var(--pink);color:#0f0d1a}
 #hint{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);padding:6px 8px;background:rgba(10,8,18,.85);border:2px solid var(--line);font-family:'Press Start 2P',monospace;font-size:8px;color:var(--amber);white-space:nowrap;display:none}
-#fade{flex-direction:column;white-space:pre-line;position:absolute;inset:44px 0 0 0;background:#000;opacity:0;pointer-events:none;transition:opacity .6s;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Press Start 2P',monospace;font-size:calc(8px + 1.6px*var(--s));line-height:1.8;color:var(--pink);padding:16px}
+#fade{flex-direction:column;white-space:pre-line;position:absolute;inset:var(--hudH,44px) 0 0 0;background:#000;opacity:0;pointer-events:none;transition:opacity .6s;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Press Start 2P',monospace;font-size:calc(8px + 1.6px*var(--s));line-height:1.8;color:var(--pink);padding:16px}
 #title{background:#0a0812;inset:0;top:0}
 #title img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated}
 #title .wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;padding-top:5%;gap:4px;text-align:center}
@@ -113,12 +134,13 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 .pick.rec{border-color:var(--pink)}
 .pick em{font-style:normal;font-family:'Press Start 2P',monospace;font-size:7px;color:#0f0d1a;background:var(--pink);padding:4px 6px}
 .ico{display:block;image-rendering:pixelated}
+.hstip{max-width:560px;padding:8px 10px;background:#000;border:2px solid var(--amber);color:var(--amber);font-size:18px;line-height:1.05}
 #rotate .ph{width:60px;height:100px;border:6px solid var(--ink);border-radius:8px;position:relative;animation:turn 2.4s ease-in-out infinite}
 #rotate .ph::after{content:"";position:absolute;left:50%;bottom:6px;width:10px;height:4px;margin-left:-5px;background:var(--ink)}
 @keyframes turn{0%,25%{transform:rotate(0)}55%,100%{transform:rotate(-90deg)}}
 @media(orientation:portrait){body.phone:not(.upright) #rotate{display:flex}}
 .pick{position:relative}.pick em{position:absolute;top:-12px;left:50%;transform:translateX(-50%);white-space:nowrap}
-@media(max-height:520px){#landing{gap:10px;padding:14px}#landing h1{font-size:38px}#landing .tip{display:none}.picks{width:min(780px,100%)}
+@media(max-height:520px){.hstip{font-size:15px;padding:5px 8px}#landing{gap:8px;padding:10px}#landing h1{font-size:38px}#landing .tip{display:none}.picks{width:min(780px,100%)}
   .pick{flex-direction:row;text-align:left;padding:12px 14px;gap:12px}.pick .ico{flex:0 0 auto}.pick span{font-size:17px}.pick>div{display:flex;flex-direction:column;gap:6px}}
 body.phone #creator,body.phone #listen,body.phone #spell,body.phone #final,body.phone #help{position:fixed;inset:0;z-index:15;
   padding:max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
@@ -138,6 +160,7 @@ body.phone #listen,body.phone #help{z-index:16}
 <button class="pick" id="pickDesk"><svg class="ico" width="72" height="44" viewBox="0 0 18 11" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="0" width="14" height="8" fill="#f2ead8"/><rect x="3" y="1" width="12" height="6" fill="#3a3456"/><rect x="7" y="8" width="4" height="1" fill="#a9a2c2"/><rect x="0" y="9" width="18" height="2" fill="#a9a2c2"/></svg><div><b>ON A COMPUTER</b><span>Arrow keys or WASD to move. Space to interact.</span></div></button>
 </div>
 <div class="tip" style="max-width:520px">Sound on. The soundtrack is an 8-bit version of "Drunk".</div>
+<div class="hstip" id="hsTip" style="display:none">FULL SCREEN TIP: tap Share, then "Add to Home Screen", and launch Drunk from your home screen. No browser bars.</div>
 </div>
 <div id="rotate" class="full" role="dialog" aria-label="Turn your phone sideways">
 <div class="ph" aria-hidden="true"></div>
@@ -244,7 +267,7 @@ body.phone #listen,body.phone #help{z-index:16}
 </div>
 </div>
 </div>
-<div id="padR" class="pad"><button id="aBtn" aria-label="Interact">A</button><div class="padlab">TALK<br>USE<br>NEXT</div></div>
+<div id="padR" class="pad"><div id="padRtop"></div><div style="display:flex;flex-direction:column;align-items:center;gap:8px"><button id="aBtn" aria-label="Interact">A</button><div class="padlab">TALK<br>USE<br>NEXT</div></div></div>
 </div>
 <script>
 {
@@ -541,7 +564,7 @@ function drawPolice() {
       const g = ctx.createRadialGradient(ph ? 60 : 236, 140, 10, ph ? 60 : 236, 140, 200);
       g.addColorStop(0, ph ? 'rgba(255,40,60,.55)' : 'rgba(40,80,255,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.restore();
-      ctx.fillStyle = 'rgba(10,8,18,.85)'; ctx.fillRect(0, 0, W, 16); ctx.fillStyle = ph ? '#ff6a7a' : '#7a9aff'; ctx.font = '6px "Press Start 2P"';
+      ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = 'rgba(10,8,18,.85)'; ctx.fillRect(0, 0, W, 16); ctx.fillStyle = ph ? '#ff6a7a' : '#7a9aff'; ctx.font = '6px "Press Start 2P"';
       ctx.fillText('SOMEBODY CALLED THE POLICE.', 66, 11);
     }
   }
@@ -632,6 +655,7 @@ function drawDrive() {
   ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = '#8a90d8'; ctx.fillRect(0, 0, W, H); ctx.restore();
   const g = ctx.createRadialGradient(d.x, 150, 4, d.x, 150, 60); g.addColorStop(0, 'rgba(255,240,180,.35)'); g.addColorStop(1, 'rgba(255,240,180,0)');
   ctx.fillStyle = g; ctx.fillRect(d.x - 60, 90, 120, 120);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.fillStyle = 'rgba(10,8,18,.85)'; ctx.fillRect(W - 96, 6, 90, 16);
   ctx.fillStyle = '#ffc24a'; ctx.font = '8px "Press Start 2P"'; ctx.fillText('ARRIVE ' + Math.max(0, Math.ceil(d.dur - d.t)), W - 90, 18);
 }
@@ -652,8 +676,9 @@ function drawCurb() {
   ctx.fillStyle = 'rgba(10,8,18,.85)'; ctx.fillRect(108, 152, 100, 14);
   ctx.fillStyle = '#f2ead8'; ctx.font = '6px "Press Start 2P"'; ctx.fillText('NAUSEA', 111, 162);
   ctx.strokeStyle = '#f2ead8'; ctx.strokeRect(150.5, 155.5, 54, 7); ctx.fillStyle = '#a8b83a'; ctx.fillRect(152, 157, 51 * fill, 4);
-  const g = ctx.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, 170); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.85)');
-  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  const g = ctx.createRadialGradient(W / 2, VH / 2, VH * .25, W / 2, VH / 2, VH * .7 + 40); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.85)');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, VH);
   ctx.fillStyle = 'rgba(10,8,18,.85)'; ctx.fillRect(0, 0, W, 16); ctx.fillStyle = '#ff6a9a'; ctx.font = '6px "Press Start 2P"';
   ctx.fillText("YOU DON'T REMEMBER GETTING HERE.", 50, 11);
 }
@@ -691,10 +716,11 @@ function update(dt) {
 }
 function draw() {
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
-  if (st.mode === 'drive') return drawDrive();
-  if (st.mode === 'curb') return drawCurb();
-  if (st.mode === 'police') return drawPolice();
+  if (st.mode === 'drive') { CY = camTo(202 - VH * .72, 'drive'); ctx.setTransform(1, 0, 0, 1, 0, -CY); return drawDrive(); }
+  if (st.mode === 'curb') { CY = camTo(188 - VH * .6, 'curb'); ctx.setTransform(1, 0, 0, 1, 0, -CY); return drawCurb(); }
+  if (st.mode === 'police') { CY = camTo(196 - VH * .6, 'police'); ctx.setTransform(1, 0, 0, 1, 0, -CY); return drawPolice(); }
   if (st.mode !== 'play') return;
+  CY = camTo(st.y - 16 - VH / 2, 'play' + st.scene);
   const sway = st.buzz >= 3 ? Math.sin(st.t * 1.3) * (st.buzz - 2) * 1.5 : 0;
   const scene = () => {
     ctx.drawImage(st.scene === 'exhouse' && st.porchOff ? IMG.exhouse_off : IMG[SC[st.scene].img], 0, 0);
@@ -704,8 +730,8 @@ function draw() {
     if (st.near) { const bx = Math.round(st.x - 3), by = Math.round(st.y - 40); ctx.fillStyle = OUT; ctx.fillRect(bx - 1, by - 1, 8, 11);
       ctx.fillStyle = '#ffc24a'; ctx.fillRect(bx, by, 6, 9); ctx.fillStyle = OUT; ctx.fillRect(bx + 2, by + 1, 2, 4); ctx.fillRect(bx + 2, by + 6, 2, 2); }
   };
-  ctx.setTransform(1, 0, 0, 1, Math.round(sway), 0); scene();
-  if (st.buzz >= 4) { ctx.globalAlpha = .3; ctx.setTransform(1, 0, 0, 1, Math.round(sway + 5 + Math.sin(st.t * 2) * 3), 1); scene(); ctx.globalAlpha = 1; }
+  ctx.setTransform(1, 0, 0, 1, Math.round(sway), -CY); scene();
+  if (st.buzz >= 4) { ctx.globalAlpha = .3; ctx.setTransform(1, 0, 0, 1, Math.round(sway + 5 + Math.sin(st.t * 2) * 3), 1 - CY); scene(); ctx.globalAlpha = 1; }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 let last = performance.now();
@@ -985,22 +1011,41 @@ function sfx(k) {
     g.gain.setValueAtTime(.05, t + i * .7); g.gain.linearRampToValueAtTime(0.0001, t + i * .7 + .7); o.connect(g); g.connect(master); o.start(t + i * .7); o.stop(t + i * .7 + .72); } }
   if (k === 'win') { [262, 330, 392, 523, 659, 784].forEach((f, i) => tone(f, t + i * .12, .4, 'square', .07)); }
 }
-$('soundBtn').onclick = e => { e.currentTarget.blur(); musicOn = !musicOn; $('soundBtn').textContent = musicOn ? 'SOUND ON' : 'SOUND OFF';
+$('soundBtn').onclick = e => { e.currentTarget.blur(); musicOn = !musicOn; fit();
   if (bgEl) musicOn ? bgEl.play().catch(() => {}) : bgEl.pause(); if (jbEl && !musicOn) jbEl.pause(); if (!AC && musicOn) startMusic(); };
 
 // ===== layout =====
+let CY = 0; let VH = H; const cam = { y: 0, key: '' };
+function camTo(target, key) {
+  const tgt = Math.max(0, Math.min(H - VH, Math.round(target)));
+  if (cam.key !== key) { cam.key = key; cam.y = tgt; } else cam.y += (tgt - cam.y) * .18;
+  return Math.round(cam.y);
+}
 function fit() {
-  const phone = document.body.classList.contains('phone'), land = innerWidth > innerHeight, HUD = 44, B = 8;
-  let aw = innerWidth - 24, ah = innerHeight - 24 - HUD - B;
-  if (phone && land) aw = innerWidth - 2 * 150 - 60;
-  else if (phone) ah -= 190;
-  aw -= B;
-  const f = Math.max(.8, Math.min(aw / W, ah / H));
-  const s = (!phone && f >= 2) ? Math.floor(f) : f;
-  cv.style.width = W * s + 'px'; cv.style.height = H * s + 'px';
-  const sc = $('screen'); sc.style.width = W * s + B + 'px'; sc.style.setProperty('--s', s.toFixed(2));
-  $('hud').style.fontSize = ''; $('loc').style.display = W * s < 520 ? 'none' : '';
-  $('soundBtn').textContent = W * s < 420 ? (musicOn ? 'SND' : 'MUTE') : (musicOn ? 'SOUND ON' : 'SOUND OFF');
+  const b = document.body, phone = b.classList.contains('phone'), landPhone = phone && innerWidth > innerHeight;
+  b.classList.toggle('land', landPhone);
+  if (landPhone) { $('padL').prepend($('hud')); $('padRtop').append($('listenBtn'), $('soundBtn')); }
+  else { $('screen').prepend($('hud')); $('hud').append($('soundBtn'), $('listenBtn')); }
+  const HUD = landPhone ? 0 : 44, B = 8, ap = getComputedStyle($('app'));
+  const padX = parseFloat(ap.paddingLeft) + parseFloat(ap.paddingRight), padY = parseFloat(ap.paddingTop) + parseFloat(ap.paddingBottom);
+  let s, vh = H;
+  if (landPhone) {
+    const aw = innerWidth - padX - $('padL').offsetWidth - $('padR').offsetWidth - 24 - B, ah = innerHeight - padY - B;
+    s = aw / W; vh = Math.floor(ah / s);
+    if (vh >= H) { vh = H; s = Math.min(aw / W, ah / H); }
+    else if (vh < 150) { vh = 150; s = ah / 150; }
+  } else {
+    let aw = innerWidth - 24 - B, ah = innerHeight - 24 - HUD - B;
+    if (phone) ah -= 190;
+    const f = Math.max(.8, Math.min(aw / W, ah / H));
+    s = (!phone && f >= 2) ? Math.floor(f) : f;
+  }
+  if (cv.height !== vh) { cv.height = vh; ctx.imageSmoothingEnabled = false; }
+  VH = vh;
+  cv.style.width = W * s + 'px'; cv.style.height = vh * s + 'px';
+  const sc = $('screen'); sc.style.width = W * s + B + 'px'; sc.style.setProperty('--s', s.toFixed(2)); sc.style.setProperty('--hudH', HUD + 'px');
+  if (!landPhone) $('loc').style.display = W * s < 520 ? 'none' : '';
+  $('soundBtn').textContent = (!landPhone && W * s < 420) ? (musicOn ? 'SND' : 'MUTE') : (musicOn ? 'SOUND ON' : 'SOUND OFF');
 }
 addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 250)); fit();
 // ===== landing =====
@@ -1017,6 +1062,8 @@ function choose(mode) {
     if (p && p.then) p.then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {})).catch(() => {}); } catch (_) {} }
   $('newBtn').focus();
 }
+{ const standalone = (navigator.standalone === true) || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches;
+  if (!standalone && matchMedia('(pointer:coarse)').matches) $('hsTip').style.display = 'block'; }
 $('pickPhone').onclick = () => choose('phone'); $('pickDesk').onclick = () => choose('desk');
 $('uprightBtn').onclick = () => { document.body.classList.add('upright'); fit(); };
 { let pref = null; try { pref = localStorage.getItem('drunk_mode'); } catch (_) {}
