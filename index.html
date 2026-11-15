@@ -59,7 +59,8 @@ body.land .padlab{display:none}
 #clock{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--amber);padding:4px 5px;background:#000;border:2px solid var(--line)}
 #clock.low{color:var(--pink);border-color:var(--pink)}
 #loc{margin-left:auto;font-family:'Press Start 2P',monospace;font-size:7px;overflow:hidden;text-overflow:ellipsis}
-#keyico{display:none;font-family:'Press Start 2P',monospace;font-size:7px;color:#0f0d1a;background:var(--amber);padding:4px 5px;border:2px solid #000}
+#keyico{display:none;font-family:'Press Start 2P',monospace;font-size:7px;color:#0f0d1a;background:var(--amber);padding:4px 5px;border:2px solid #000;white-space:nowrap}
+@keyframes keyin{0%{transform:scale(2)}100%{transform:scale(1)}}#keyico.new{animation:keyin .5s steps(4)}
 .hbtn{height:30px;padding:0 7px;border:2px solid #000;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;color:#0f0d1a}
 #listenBtn{background:var(--pink);box-shadow:inset 0 2px 0 #ffc0d4}#soundBtn{background:#2a2244;color:var(--ink)}
 canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
@@ -175,7 +176,7 @@ body.phone #listen,body.phone #help{z-index:16}
 <span class="lab" style="color:#f0a73a">COURAGE</span><div class="meter c" id="mC"></div>
 <span class="lab" style="color:#ff6a9a;margin-left:3px">BUZZ</span><div class="meter b" id="mB"></div>
 <span id="clock" aria-label="Time left">6:00</span>
-<span id="keyico">KEY</span>
+<span id="keyico" aria-label="You have the closet key"><svg width="16" height="8" viewBox="0 0 8 4" shape-rendering="crispEdges" aria-hidden="true" style="vertical-align:middle;margin-right:4px"><rect x="0" y="0" width="3" height="3" fill="#0f0d1a"/><rect x="1" y="1" width="1" height="1" fill="#ffc24a"/><rect x="3" y="1" width="5" height="1" fill="#0f0d1a"/><rect x="5" y="2" width="1" height="2" fill="#0f0d1a"/><rect x="7" y="2" width="1" height="2" fill="#0f0d1a"/></svg>CLOSET KEY</span>
 <span id="loc">HOME</span>
 <button class="hbtn" id="soundBtn" aria-label="Toggle sound">SOUND ON</button>
 <button class="hbtn" id="listenBtn">LISTEN</button>
@@ -294,7 +295,7 @@ const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 const $ = id => document.getElementById(id);
 const IMG = {};
-['map', 'home', 'tavern', 'club', 'exhouse', 'exhouse_off', 'title'].forEach(n => { const i = new Image(); i.src = 'img/' + n + '.png'; IMG[n] = i; });
+['map', 'home', 'tavern', 'club', 'club_nokey', 'exhouse', 'exhouse_off', 'title'].forEach(n => { const i = new Image(); i.src = 'img/' + n + '.png'; IMG[n] = i; });
 
 const st = { mode: 'title', scene: 'home', x: 100, y: 182, dir: 'down', step: 0, stepT: 0, courage: 0, buzz: 0, key: false,
   watched: false, porchOff: false, knocks: 0, played: 0, drinks: 0, t: 0, look: null, drive: null, curb: null, near: null, lock: false };
@@ -434,7 +435,8 @@ const mmss = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart
 function hud() {
   $('mC').innerHTML = [0, 1, 2, 3, 4].map(i => '<i class="' + (i < st.courage ? 'on' : '') + '"></i>').join('');
   $('mB').innerHTML = [0, 1, 2, 3, 4].map(i => '<i class="' + (i < st.buzz ? 'on' : '') + '"></i>').join('');
-  $('keyico').style.display = st.key ? 'inline-block' : 'none';
+  const ki = $('keyico'); if (st.key && ki.style.display !== 'inline-block') { ki.classList.remove('new'); void ki.offsetWidth; ki.classList.add('new'); }
+  ki.style.display = st.key ? 'inline-block' : 'none';
   const left = Math.max(0, GAME_SECONDS - st.played), ck = $('clock'); ck.textContent = mmss(left); ck.classList.toggle('low', left < 60);
   $('loc').textContent = st.mode === 'drive' ? 'ON THE ROAD' : (SC[st.scene] || {}).name || '';
   for (const k in sprCache) delete sprCache[k];
@@ -453,7 +455,7 @@ function nextLine() {
   if (dChoice) {
     const c = document.createElement('div'); c.className = 'choices';
     dChoice.forEach((o, i) => { const b = document.createElement('button'); b.className = 'btn' + (o[2] === 'pink' ? ' pink' : i === 0 ? ' hot' : ''); b.textContent = o[0];
-      b.onclick = e => { e.stopPropagation(); d.style.display = 'none'; dq = []; dDone = null; st.lock = false; dChoice = null; o[1](); }; c.appendChild(b); });
+      b.onclick = e => { e.stopPropagation(); d.style.display = 'none'; const pending = dDone; dq = []; dDone = null; st.lock = false; dChoice = null; if (pending) pending(); o[1](); }; c.appendChild(b); });
     d.appendChild(c); setTimeout(() => c.firstChild && c.firstChild.focus(), 30);
   } else d.insertAdjacentHTML('beforeend', '<div class="more">SPACE &#9660;</div>');
   d.style.display = 'block';
@@ -494,7 +496,7 @@ function bed() {
 }
 function closet() {
   if (!st.key) return say(['The closet is padlocked.', 'Where did you leave that key?']);
-  if (st.buzz > 2) return say(["You can't get the key in the lock. Your hands won't stop shaking.", '(Get your Buzz down to 2 or less.)']);
+  if (st.buzz > 2) return say(["You have the key, but you can't get it in the lock. Your hands won't stop shaking.", '(Your Buzz is ' + st.buzz + '. It has to be 2 or less. Every trip to another place lowers it by 1, so take a walk around the block. Sleeping on the couch also works, and you keep the key.)']);
   say(['The padlock clicks open. On the shelf: a cardboard box. Your handwriting on the side.', L('Cut in the dark. The ones we let drown and the others in the ark.')], () => openSpell());
 }
 let bartTalk = false;
@@ -520,8 +522,7 @@ function band() {
 function clubBartender() {
   if (st.key) return say([{ who: 'BARTENDER', t: 'Need anything else?', ch: [['A DRINK', () => drink('club')], ['NO THANKS', () => {}]] }]);
   if (st.courage < 2) return say(['The bartender looks right through you.', '(You need 2 Courage to get their attention.)']);
-  say([{ who: 'BARTENDER', t: 'Oh, it\'s you. You left this here last night.' }, { who: 'BARTENDER', t: 'Made me promise not to give it back till you could stand up straight. Close enough.' }, 'You got the CLOSET KEY.', ASK('Now you just need the right words. They\'re in the song.')],
-    () => { st.key = true; hud(); sfx('key'); nudge(); });
+  say([{ who: 'BARTENDER', t: 'Oh, it\'s you. You left this here last night.' }, { who: 'BARTENDER', t: 'Made me promise not to give it back till you could stand up straight. Close enough.' }, { t: 'You got the CLOSET KEY.', fx: () => { st.key = true; hud(); sfx('key'); nudge(); } }, ASK('Now you just need the right words. They\'re in the song.')]);
 }
 function mosh() {
   say([{ t: 'The pit is swirling. Jump in?', ch: [['MOSH', () => {
@@ -723,7 +724,7 @@ function draw() {
   CY = camTo(st.y - 16 - VH / 2, 'play' + st.scene);
   const sway = st.buzz >= 3 ? Math.sin(st.t * 1.3) * (st.buzz - 2) * 1.5 : 0;
   const scene = () => {
-    ctx.drawImage(st.scene === 'exhouse' && st.porchOff ? IMG.exhouse_off : IMG[SC[st.scene].img], 0, 0);
+    ctx.drawImage(st.scene === 'exhouse' && st.porchOff ? IMG.exhouse_off : st.scene === 'club' && st.key ? IMG.club_nokey : IMG[SC[st.scene].img], 0, 0);
     const fr = [0, 1, 0, 2][st.step], p = sprite(st.dir, fr);
     ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(st.x, st.y - 1, 7, 2, 0, 0, 7); ctx.fill();
     ctx.drawImage(p, Math.round(st.x - 9), Math.round(st.y - 27));
