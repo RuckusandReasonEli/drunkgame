@@ -62,7 +62,7 @@ body.land .padlab{display:none}
 #keyico{display:none;font-family:'Press Start 2P',monospace;font-size:7px;color:#0f0d1a;background:var(--amber);padding:4px 5px;border:2px solid #000;white-space:nowrap}
 @keyframes keyin{0%{transform:scale(2)}100%{transform:scale(1)}}#keyico.new{animation:keyin .5s steps(4)}
 .hbtn{height:30px;padding:0 7px;border:2px solid #000;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;color:#0f0d1a}
-#listenBtn{background:var(--pink);box-shadow:inset 0 2px 0 #ffc0d4}#soundBtn{background:#2a2244;color:var(--ink)}
+#listenBtn{background:var(--pink);box-shadow:inset 0 2px 0 #ffc0d4}#hintBtn{background:var(--amber);box-shadow:inset 0 2px 0 #fff0b0}#soundBtn{background:#2a2244;color:var(--ink)}
 canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 .ov{position:absolute;left:0;right:0;bottom:0;top:var(--hudH,44px);display:none}
 .box{background:var(--panel);border:4px solid var(--ink);box-shadow:0 0 0 4px #000,6px 6px 0 4px #000}
@@ -181,6 +181,7 @@ body.phone #listen,body.phone #help{z-index:16}
 <span id="keyico" aria-label="You have the closet key"><svg width="16" height="8" viewBox="0 0 8 4" shape-rendering="crispEdges" aria-hidden="true" style="vertical-align:middle;margin-right:4px"><rect x="0" y="0" width="3" height="3" fill="#0f0d1a"/><rect x="1" y="1" width="1" height="1" fill="#ffc24a"/><rect x="3" y="1" width="5" height="1" fill="#0f0d1a"/><rect x="5" y="2" width="1" height="2" fill="#0f0d1a"/><rect x="7" y="2" width="1" height="2" fill="#0f0d1a"/></svg>CLOSET KEY</span>
 <span id="loc">HOME</span>
 <button class="hbtn" id="soundBtn" aria-label="Toggle sound">SOUND ON</button>
+<button class="hbtn" id="hintBtn">HINT</button>
 <button class="hbtn" id="listenBtn">LISTEN</button>
 </div>
 <canvas id="cv" width="296" height="248" aria-label="Game screen"></canvas>
@@ -407,8 +408,9 @@ const SC = {
       { r: [108, 152, 40, 10], l: 'TV', f: () => say(['Static. Same as your head.']) }] },
   tavern: { img: 'tavern', name: 'TAVERN', walk: [[0, 56, 296, 192]],
     block: [[58, 54, 176, 62], [74, 130, 12, 8], [104, 130, 12, 8], [164, 130, 12, 8], [194, 130, 12, 8], [250, 66, 30, 44], [20, 192, 34, 30], [224, 192, 34, 30], [52, 220, 16, 8]],
-    exit: { r: [126, 244, 44, 4], to: 'map' },
+    exit: { r: [122, 244, 52, 4], to: 'map' },
     acts: [
+      { r: [118, 226, 60, 18], l: 'LEAVE', f: () => leave() },
       { r: [96, 116, 64, 14], l: 'BARTENDER', f: () => tavernBartender() },
       { r: [242, 108, 44, 14], l: 'JUKEBOX', f: () => jukebox() },
       { r: [14, 186, 46, 50], l: 'REGULAR', f: () => say([{ who: 'REGULAR', t: "Weren't you at the club last night? You handed their bartender something. Made a whole speech about it." }, L('Rumors in the back rows.')]) },
@@ -417,6 +419,7 @@ const SC = {
     block: [[4, 176, 104, 72], [250, 232, 16, 8], [34, 145, 12, 6], [64, 135, 12, 6], [98, 147, 12, 6], [174, 141, 12, 6], [208, 151, 12, 6], [242, 137, 12, 6], [228, 181, 12, 6]],
     exit: { r: [284, 196, 12, 40], to: 'map' },
     acts: [
+      { r: [262, 194, 34, 46], l: 'LEAVE', f: () => leave() },
       { r: [100, 98, 100, 14], l: 'THE BAND', f: () => band() },
       { r: [106, 200, 22, 40], l: 'BARTENDER', f: () => clubBartender() },
       { r: [170, 136, 26, 20], l: 'MOSH', f: () => mosh() }] },
@@ -512,6 +515,7 @@ function bed() {
   say(['You lie down for a minute. Nothing gets solved, but your head clears a little.'], () => { st.buzz = Math.max(0, st.buzz - 1); hud(); });
 }
 function closet() {
+  st.closetTried = true;
   if (!st.key) return say(['The closet is padlocked.', 'Where did you leave that key?']);
   if (st.buzz > 2) return say(["You have the key, but you can't get it in the lock. Your hands won't stop shaking.", '(Your Buzz is ' + st.buzz + '. It has to be 2 or less. Every trip to another place lowers it by 1, so take a walk around the block. Sleeping on the couch also works, and you keep the key.)']);
   say(['The padlock clicks open. On the shelf: a cardboard box. Your handwriting on the side.', L('Cut in the dark. The ones we let drown and the others in the ark.')], () => openSpell());
@@ -718,7 +722,7 @@ function npcAnim(n, i) {
 }
 const GLYPH = { B: ['XX.', 'X.X', 'XX.', 'X.X', 'XX.'], A: ['.X.', 'X.X', 'XXX', 'X.X', 'X.X'], R: ['XX.', 'X.X', 'XX.', 'X.X', 'X.X'], L: ['X..', 'X..', 'X..', 'X..', 'XXX'],
   I: ['XXX', '.X.', '.X.', '.X.', 'XXX'], V: ['X.X', 'X.X', 'X.X', 'X.X', '.X.'], E: ['XXX', 'X..', 'XX.', 'X..', 'XXX'], M: ['X.X', 'XXX', 'XXX', 'X.X', 'X.X'],
-  U: ['X.X', 'X.X', 'X.X', 'X.X', 'XXX'], S: ['.XX', 'X..', '.X.', '..X', 'XX.'], C: ['.XX', 'X..', 'X..', 'X..', '.XX'], ' ': ['..', '..', '..', '..', '..'] };
+  U: ['X.X', 'X.X', 'X.X', 'X.X', 'XXX'], X: ['X.X', 'X.X', '.X.', 'X.X', 'X.X'], T: ['XXX', '.X.', '.X.', '.X.', '.X.'], S: ['.XX', 'X..', '.X.', '..X', 'XX.'], C: ['.XX', 'X..', 'X..', 'X..', '.XX'], ' ': ['..', '..', '..', '..', '..'] };
 const textW = (s, k) => [...s].reduce((w, ch) => w + (GLYPH[ch][0].length + 1) * k, -k);
 function pxText(s, x, y, k, col, skip) {
   let cx = x; [...s].forEach((ch, n) => { const g = GLYPH[ch];
@@ -758,6 +762,12 @@ function drawMapFx() {
   ctx.fillStyle = '#a89ac0'; HEART.slice(8).forEach((row, j) => [...row].forEach((c, i) => { const jj = j + 8; if (c === 'X' && i !== CRACK[jj]) { const left = i < CRACK[jj]; ctx.fillRect(cx + i * 2 + (left ? -2 : 2), cy + jj * 2 + (left ? 0 : 2) + 1, 2, 1); } }));
   ctx.fillStyle = '#7ab0e8';
   for (let k = 0; k < 6; k++) { const ry = (t * 30 + k * 11) % 26; ctx.fillRect(cx + 4 + k * 4, cy + 26 + ry, 1, 2); }
+}
+function exitSign(x, y) {
+  const on = Math.sin(st.t * 3) > -.6;
+  ctx.fillStyle = OUT; ctx.fillRect(x - 1, y - 1, 21, 11); ctx.fillStyle = '#0c1a10'; ctx.fillRect(x, y, 19, 9);
+  if (on) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(80,255,130,.16)'; ctx.fillRect(x - 4, y - 3, 27, 15); ctx.restore(); }
+  pxText('EXIT', x + 2, y + 2, 1, on ? '#6aff8a' : '#2a6a3a');
 }
 let flowT = 0;
 function guitar() {
@@ -832,6 +842,8 @@ function draw() {
   const scene = () => {
     ctx.drawImage(st.scene === 'exhouse' && st.porchOff ? IMG.exhouse_off : IMG[SC[st.scene].img], 0, 0);
     if (st.scene === 'map') drawMapFx();
+    if (st.scene === 'tavern') exitSign(140, 225);
+    if (st.scene === 'club') exitSign(275, 185);
     const A = ATLAS[st.scene], ents = [];
     if (A) {
       A.npcs.forEach((n, i) => ents.push({ y: n.y, d: () => { const a = npcAnim(n, i);
@@ -910,7 +922,19 @@ function openListen() {
     : '<div class="plat" aria-disabled="true">' + l[0] + '<span>Link coming soon</span></div>').join('');
   openOv('listen'); $('lClose').focus();
 }
-$('listenBtn').onclick = e => { e.currentTarget.blur(); openListen(); }; $('tListen').onclick = openListen; $('lClose').onclick = () => closeOv('listen');
+$('listenBtn').onclick = e => { e.currentTarget.blur(); openListen(); };
+$('hintBtn').onclick = e => { e.currentTarget.blur(); hint(); };
+function hint() {
+  let msg, toSong = false;
+  if (st.spellSeen) { msg = 'You must listen to the bridge to hear the spell.'; toSong = true; }
+  else if (st.key) msg = st.buzz > 2 ? 'Check the closet. (Steady hands first: get your Buzz to 2 or less.)' : 'Check the closet.';
+  else if (st.closetTried) msg = 'The bartender has the key.';
+  else msg = 'Check the closet.';
+  sfx('click');
+  if ($('spell').style.display === 'flex') { $('spellMsg').textContent = 'HINT: ' + msg; $('spellMsg').style.color = 'var(--amber)'; $('sListen').style.display = 'inline-block'; return; }
+  if (st.mode !== 'play' || st.lock || $('dlg').style.display === 'block') return;
+  say([toSong ? { who: 'HINT', t: msg, ch: [['GOT IT', () => {}], ['LISTEN TO THE BRIDGE', () => openListen(), 'pink']] } : { who: 'HINT', t: msg }]);
+} $('tListen').onclick = openListen; $('lClose').onclick = () => closeOv('listen');
 $('howBtn').onclick = () => { openOv('help'); $('helpClose').focus(); }; $('helpClose').onclick = () => closeOv('help');
 
 // spell
@@ -919,7 +943,7 @@ function lev(a, b) { const d = []; for (let i = 0; i <= a.length; i++) { d[i] = 
   for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
   return d[a.length][b.length]; }
 let tries = 0;
-function openSpell() { st.lock = true; tries = 0; $('spellIn').value = ''; $('spellMsg').textContent = 'Type the words. Press CAST or Enter.'; $('spellMsg').style.color = '';
+function openSpell() { st.spellSeen = true; st.lock = true; tries = 0; $('spellIn').value = ''; $('spellMsg').textContent = 'Type the words. Press CAST or Enter.'; $('spellMsg').style.color = '';
   $('sListen').style.display = 'inline-block'; $('sListen').textContent = 'NEED THE WORDS? LISTEN'; openOv('spell'); setTimeout(() => $('spellIn').focus(), 50); }
 function cast() {
   const v = norm($('spellIn').value);
@@ -1086,7 +1110,7 @@ $('rndBtn').onclick = () => { const r = n => Math.floor(Math.random() * n); Obje
 $('newBtn').onclick = () => { startMusic(); closeOv('title'); renderCreator(); openOv('creator'); };
 $('startBtn').onclick = () => {
   st.look = lookFrom(); closeOv('creator');
-  Object.assign(st, { mode: 'intro', courage: 1, buzz: 3, key: false, watched: false, porchOff: false, knocks: 0, played: 0, drinks: 0, cups: {}, cupN: 0 }); hud();
+  Object.assign(st, { mode: 'intro', courage: 1, buzz: 3, key: false, watched: false, porchOff: false, knocks: 0, played: 0, drinks: 0, cups: {}, cupN: 0, closetTried: false, spellSeen: false }); hud();
   go('map', MAPSPAWN.home[0], MAPSPAWN.home[1]);
   const f = $('fade'); f.style.transition = 'none'; f.style.opacity = 1; f.innerHTML = '<span>"Drunk and on my way home,\ncall you just to say I\'m coming over baby."</span><span class="fattr">' + ATTR + '</span>'; st.lock = true;
   setTimeout(() => { f.style.transition = ''; startDrive('home', false, true); f.style.opacity = 0; }, 3600);
@@ -1144,8 +1168,8 @@ function camTo(target, key, sh) {
 function fit() {
   const b = document.body, phone = b.classList.contains('phone'), landPhone = phone && innerWidth > innerHeight;
   b.classList.toggle('land', landPhone);
-  if (landPhone) { $('padL').prepend($('hud')); $('padRtop').append($('listenBtn'), $('soundBtn')); }
-  else { $('screen').prepend($('hud')); $('hud').append($('soundBtn'), $('listenBtn')); }
+  if (landPhone) { $('padL').prepend($('hud')); $('padRtop').append($('listenBtn'), $('hintBtn'), $('soundBtn')); }
+  else { $('screen').prepend($('hud')); $('hud').append($('soundBtn'), $('hintBtn'), $('listenBtn')); }
   const HUD = landPhone ? 0 : 44, B = 8, ap = getComputedStyle($('app'));
   const padX = parseFloat(ap.paddingLeft) + parseFloat(ap.paddingRight), padY = parseFloat(ap.paddingTop) + parseFloat(ap.paddingBottom);
   let s, vh = H;
