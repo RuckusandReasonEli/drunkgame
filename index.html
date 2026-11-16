@@ -297,10 +297,11 @@ const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 ctx.imageSmoothingEnabled = false;
 const $ = id => document.getElementById(id);
 const IMG = {};
-['map', 'home', 'tavern', 'club', 'club_nokey', 'exhouse', 'exhouse_off', 'title'].forEach(n => { const i = new Image(); i.src = 'img/' + n + '.png'; IMG[n] = i; });
+const ATLAS = {"tavern":{"npcs":[{"name":"bartender","x":128,"y":82,"kind":"bar","f":[0]},{"name":"regular","x":34,"y":200,"kind":"sit","f":[1]},{"name":"patron2","x":60,"y":226,"kind":"sit","f":[2]},{"name":"cowboy","x":238,"y":200,"kind":"sit","f":[3]}],"fg":[{"name":"bar","sy":116,"f":4},{"name":"table1","sy":222,"f":5},{"name":"table2","sy":222,"f":6}]},"club":{"npcs":[{"name":"drummer","x":148,"y":52,"kind":"drums","f":[7,8]},{"name":"eli","x":150,"y":84,"kind":"singer","f":[9,10]},{"name":"bassist","x":96,"y":80,"kind":"band","f":[11]},{"name":"keys","x":210,"y":74,"kind":"band","f":[12]},{"name":"crowd0","x":40,"y":150,"kind":"crowd","f":[13,14]},{"name":"crowd1","x":70,"y":140,"kind":"crowd","f":[15,16]},{"name":"crowd2","x":104,"y":152,"kind":"crowd","f":[17,18]},{"name":"crowd3","x":180,"y":146,"kind":"crowd","f":[19,20]},{"name":"crowd4","x":214,"y":156,"kind":"crowd","f":[21,22]},{"name":"crowd5","x":248,"y":142,"kind":"crowd","f":[23,24]},{"name":"crowd6","x":234,"y":186,"kind":"crowd","f":[25,26]},{"name":"clubbartender","x":50,"y":212,"kind":"bar","f":[27]},{"name":"bouncer","x":258,"y":238,"kind":"idle","f":[28]}],"fg":[{"name":"kick","sy":59,"f":29},{"name":"keyboard","sy":78,"f":30},{"name":"mic","sy":90,"f":31},{"name":"cbar","sy":238,"f":32},{"name":"key","sy":239,"f":33}]},"map":{"npcs":[{"name":"queue1","x":198,"y":248,"kind":"idle","f":[34]},{"name":"queue2","x":188,"y":246,"kind":"idle","f":[35]}],"fg":[]},"rects":[[418,0,16,25,120,57],[435,0,16,25,26,175],[350,0,16,26,52,200],[282,0,16,27,230,173],[0,0,178,34,57,83],[260,35,32,24,21,199],[293,35,32,24,225,199],[452,0,16,25,140,27],[469,0,16,25,140,27],[326,35,25,24,141,60],[352,35,25,24,141,60],[0,35,30,25,87,55],[31,35,16,25,202,49],[48,35,16,25,32,125],[65,35,16,25,32,125],[82,35,16,25,62,115],[99,35,16,25,62,115],[299,0,16,27,96,125],[316,0,16,27,96,125],[367,0,16,26,172,120],[384,0,16,26,172,120],[116,35,16,25,206,131],[133,35,16,25,206,131],[150,35,16,25,240,117],[167,35,16,25,240,117],[184,35,16,25,226,161],[201,35,16,25,226,161],[333,0,16,27,42,185],[218,35,16,25,250,213],[378,35,24,18,137,42],[403,35,32,16,194,63],[235,35,7,25,159,57],[179,0,102,30,3,209],[436,35,15,12,65,208],[243,35,16,25,190,223],[401,0,16,26,180,220]]};
+['map', 'home', 'tavern', 'club', 'exhouse', 'exhouse_off', 'title', 'atlas'].forEach(n => { const i = new Image(); i.src = 'img/' + n + '.png'; IMG[n] = i; });
 
 const st = { mode: 'title', scene: 'home', x: 100, y: 182, dir: 'down', step: 0, stepT: 0, courage: 0, buzz: 0, key: false,
-  watched: false, porchOff: false, knocks: 0, played: 0, drinks: 0, t: 0, look: null, drive: null, curb: null, near: null, lock: false };
+  watched: false, porchOff: false, knocks: 0, played: 0, drinks: 0, cups: {}, cupN: 0, t: 0, look: null, drive: null, curb: null, near: null, lock: false };
 
 // ===== sprite =====
 function rgb(h) { return [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)); }
@@ -382,16 +383,18 @@ function carCanvas(col) {
 // ===== scenes =====
 const tree = (x, y) => [x + 4, y + 12, 14, 10];
 const SC = {
-  map: { img: 'map', name: 'TOWN', walk: [[0, 0, 296, 248]],
+  map: { img: 'map', name: 'TOWN', walk: [[0, 0, 296, 360]],
     block: [[12, 10, 94, 74], [160, 12, 76, 68], [16, 150, 84, 72], [170, 150, 102, 78], [106, 174, 20, 32],
-      tree(262, 10), tree(270, 60), tree(112, 8), tree(110, 190), tree(6, 96), tree(152, 186),
-      [124, 108, 6, 4], [226, 108, 6, 4], [124, 156, 6, 4], [159, 233, 14, 6], [149, 231, 14, 6]],
+      ...[[274, 14], [274, 70], [112, 8], [6, 96], [6, 290], [90, 300], [40, 330]].map(p => tree(p[0], p[1])),
+      ...[[120, 90], [240, 90], [120, 142], [120, 250], [284, 300]].map(p => [p[0] + 1, p[1] + 14, 4, 6]),
+      ...[[174, 256], [222, 258], [246, 320], [198, 322]].map(p => [p[0] + 1, p[1] + 3, 20, 32]),
+      [72, 98, 12, 8], [30, 238, 8, 6], [56, 266, 24, 7], [167, 304, 4, 6], [192, 243, 12, 6], [182, 241, 12, 6]],
     doors: [{ r: [50, 84, 18, 8], to: 'tavern' }, { r: [188, 80, 20, 8], to: 'exhouse' }, { r: [46, 222, 20, 8], to: 'home' }, { r: [206, 228, 30, 8], to: 'club' }],
     acts: [{ r: [98, 166, 36, 48], l: 'DRIVE', f: () => askDrive() }] },
   home: { img: 'home', name: 'HOME',
-    walk: [[4, 20, 146, 94], [154, 20, 138, 94], [4, 134, 176, 110], [184, 134, 108, 110], [60, 108, 18, 30], [146, 70, 12, 18], [176, 190, 12, 22], [58, 240, 26, 8]],
+    walk: [[4, 20, 146, 94], [154, 20, 138, 94], [4, 134, 176, 110], [184, 134, 108, 110], [88, 106, 16, 32], [146, 70, 12, 18], [176, 190, 12, 22], [58, 240, 26, 8]],
     block: [[12, 24, 48, 58], [64, 22, 14, 21], [160, 24, 28, 61], [210, 22, 20, 22], [256, 20, 16, 26], [14, 136, 72, 32], [26, 186, 48, 17],
-      [100, 128, 34, 26], [188, 128, 76, 36], [266, 120, 22, 36], [218, 186, 30, 23], [196, 216, 20, 16]],
+      [110, 128, 34, 26], [155, 206, 14, 6], [188, 128, 76, 36], [266, 120, 22, 36], [218, 186, 30, 23], [196, 216, 20, 16]],
     exit: { r: [58, 244, 26, 4], to: 'map' },
     acts: [
       { r: [12, 166, 76, 14], l: 'COUCH', f: () => couch() },
@@ -399,8 +402,9 @@ const SC = {
       { r: [262, 154, 30, 10], l: 'FRIDGE', f: () => say(['A lemon, some mustard, and a fridge magnet shaped like a guitar.']) },
       { r: [204, 42, 32, 10], l: 'MIRROR', f: () => mirror() },
       { r: [10, 80, 54, 12], l: 'BED', f: () => bed() },
-      { r: [132, 134, 36, 10], l: 'CLOSET', f: () => closet() },
-      { r: [98, 152, 40, 10], l: 'TV', f: () => say(['Static. Same as your head.']) }] },
+      { r: [144, 134, 32, 10], l: 'CLOSET', f: () => closet() },
+      { r: [148, 210, 30, 16], l: 'GUITAR', f: () => guitar() },
+      { r: [108, 152, 40, 10], l: 'TV', f: () => say(['Static. Same as your head.']) }] },
   tavern: { img: 'tavern', name: 'TAVERN', walk: [[0, 56, 296, 192]],
     block: [[58, 54, 176, 62], [74, 130, 12, 8], [104, 130, 12, 8], [164, 130, 12, 8], [194, 130, 12, 8], [250, 66, 30, 44], [20, 192, 34, 30], [224, 192, 34, 30], [52, 220, 16, 8]],
     exit: { r: [126, 244, 44, 4], to: 'map' },
@@ -426,6 +430,17 @@ const SC = {
 const SPAWN = { tavern: [148, 236], club: [262, 214], exhouse: [150, 236], home: [70, 236] };
 const MAPSPAWN = { tavern: [59, 98], exhouse: [198, 94], home: [56, 238], club: [221, 245] };
 
+const CUPS = { home: [[100, 214], [118, 198], [142, 232], [110, 98]] };
+const CUP_MSG = ['This is empty. Like your soul. Check the kitchen.', 'This cup is about as substantive as your purpose.'];
+function cupActs() {
+  return (CUPS[st.scene] || []).map((c, i) => (st.cups && st.cups[st.scene + i]) ? null :
+    { r: [c[0] - 11, c[1] - 8, 22, 20], l: 'CUP', f: () => { st.cups[st.scene + i] = true; sfx('click'); say([CUP_MSG[st.cupN++ % 2]]); } }).filter(Boolean);
+}
+function drawCup(x, y) {
+  ctx.fillStyle = OUT; ctx.fillRect(x - 4, y - 4, 9, 6);
+  ctx.fillStyle = '#d63a3a'; ctx.fillRect(x - 3, y - 3, 6, 4); ctx.fillStyle = '#f06a6a'; ctx.fillRect(x - 3, y - 3, 6, 1);
+  ctx.fillStyle = '#f4f0e6'; ctx.fillRect(x + 3, y - 3, 1, 4); ctx.fillStyle = '#7a1e1e'; ctx.fillRect(x - 3, y, 6, 1);
+}
 function inR(x, y, r) { return x >= r[0] && x < r[0] + r[2] && y >= r[1] && y < r[1] + r[3]; }
 function free(x, y) {
   const s = SC[st.scene], pts = [[x - 4, y - 3], [x + 4, y - 3], [x - 4, y], [x + 4, y]];
@@ -686,12 +701,99 @@ function drawCurb() {
   ctx.fillText("YOU DON'T REMEMBER GETTING HERE.", 50, 11);
 }
 
+// ===== NPC animation, signs, flow state =====
+function piece(i, dx, dy) { const r = ATLAS.rects[i]; ctx.drawImage(IMG.atlas, r[0], r[1], r[2], r[3], r[4] + dx, r[5] + dy, r[2], r[3]); }
+const BEAT = 60 / 112;
+function npcAnim(n, i) {
+  const t = st.t, ph = i * .37 + n.x * .013, f = n.f, alt = f[f.length - 1];
+  switch (n.kind) {
+    case 'singer': { const b = Math.floor(t / BEAT); return [b % 4 === 3 ? alt : f[0], Math.round(Math.sin(t * 1.7) * 2), (t / BEAT) % 1 < .5 ? -1 : 0]; }
+    case 'drums': { const b = Math.floor(t / (BEAT / 2)); return [b % 2 ? alt : f[0], 0, b % 2 ? -1 : 0]; }
+    case 'band': return [f[0], Math.round(Math.sin(t * 2.2 + ph) * 1.4), (t / BEAT + ph) % 1 < .5 ? -1 : 0];
+    case 'crowd': { const b = Math.floor(t / BEAT + ph * 3); return [b % 2 ? alt : f[0], 0, b % 2 ? -1 : 0]; }
+    case 'bar': return [f[0], Math.round(Math.sin(t * .8 + ph) * 2), Math.sin(t * 2 + ph) > .7 ? -1 : 0];
+    case 'sit': return [f[0], 0, Math.sin(t * 1.6 + ph) > .5 ? -1 : 0];
+    default: return [f[0], 0, Math.sin(t * 1.9 + ph) > .4 ? -1 : 0];
+  }
+}
+const GLYPH = { B: ['XX.', 'X.X', 'XX.', 'X.X', 'XX.'], A: ['.X.', 'X.X', 'XXX', 'X.X', 'X.X'], R: ['XX.', 'X.X', 'XX.', 'X.X', 'X.X'], L: ['X..', 'X..', 'X..', 'X..', 'XXX'],
+  I: ['XXX', '.X.', '.X.', '.X.', 'XXX'], V: ['X.X', 'X.X', 'X.X', 'X.X', '.X.'], E: ['XXX', 'X..', 'XX.', 'X..', 'XXX'], M: ['X.X', 'XXX', 'XXX', 'X.X', 'X.X'],
+  U: ['X.X', 'X.X', 'X.X', 'X.X', 'XXX'], S: ['.XX', 'X..', '.X.', '..X', 'XX.'], C: ['.XX', 'X..', 'X..', 'X..', '.XX'], ' ': ['..', '..', '..', '..', '..'] };
+const textW = (s, k) => [...s].reduce((w, ch) => w + (GLYPH[ch][0].length + 1) * k, -k);
+function pxText(s, x, y, k, col, skip) {
+  let cx = x; [...s].forEach((ch, n) => { const g = GLYPH[ch];
+    if (!(skip && skip(n))) { ctx.fillStyle = col; g.forEach((row, j) => [...row].forEach((c, i) => { if (c === 'X') ctx.fillRect(cx + i * k, y + j * k, k, k); })); }
+    cx += (g[0].length + 1) * k; });
+}
+const HEART = ['..XXX.....XXX..', '.XXXXX...XXXXX.', 'XXXXXXX.XXXXXXX', 'XXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXX', 'XXXXXXXXXXXXXXX', '.XXXXXXXXXXXXX.',
+  '..XXXXXXXXXXX..', '...XXXXXXXXX...', '....XXXXXXX....', '.....XXXXX.....', '......XXX......', '.......X.......'];
+const CRACK = [7, 7, 8, 6, 8, 6, 8, 7, 6, 8, 7, 7, 7];
+function heart(x, y, k, col, side) {
+  ctx.fillStyle = col;
+  HEART.forEach((row, j) => [...row].forEach((c, i) => { if (c !== 'X' || i === CRACK[j]) return; const left = i < CRACK[j];
+    if (side === 'both' || (side === 'L') === left) ctx.fillRect(x + i * k + (left ? -k : k), y + j * k + (left ? 0 : k), k, k); }));
+}
+function drawMapFx() {
+  const t = st.t;
+  // neon BAR sign on the tavern, with a bad connection
+  const bx = 37, by = 45, glitch = (Math.sin(t * 13) > .93) || (Math.floor(t * 2) % 17 === 0);
+  ctx.fillStyle = OUT; ctx.fillRect(bx - 1, by - 1, 30, 16); ctx.fillStyle = '#1a0a14'; ctx.fillRect(bx, by, 28, 14);
+  if (!glitch) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = 'rgba(255,80,140,.18)'; ctx.fillRect(bx - 6, by - 5, 40, 24); ctx.restore(); }
+  pxText('BAR', bx + 3, by + 2, 2, glitch ? '#5a2a3a' : '#ff6a9a', n => n === 1 && Math.sin(t * 5) + Math.sin(t * 13) > 1.75);
+  // LIVE MUSIC marquee over the club door with chasing bulbs
+  const mx = 188, my = 186, mw = 66, mh = 15, step = Math.floor(t * 8);
+  ctx.fillStyle = OUT; ctx.fillRect(mx - 1, my - 1, mw + 2, mh + 2); ctx.fillStyle = '#20142c'; ctx.fillRect(mx, my, mw, mh);
+  let bi = 0;
+  const bulb = (x, y) => { ctx.fillStyle = (bi++ + step) % 3 === 0 ? '#fff4c0' : '#7a5a2a'; ctx.fillRect(x, y, 1, 1); };
+  for (let x = mx + 1; x < mx + mw - 1; x += 3) bulb(x, my + 1);
+  for (let y = my + 1; y < my + mh - 1; y += 3) bulb(mx + mw - 2, y);
+  for (let x = mx + mw - 2; x > mx; x -= 3) bulb(x, my + mh - 2);
+  for (let y = my + mh - 2; y > my; y -= 3) bulb(mx + 1, y);
+  pxText('LIVE MUSIC', Math.round(mx + (mw - textW('LIVE MUSIC', 1)) / 2), my + 5, 1, step % 8 < 6 ? '#ffc24a' : '#ff6a9a');
+  // a cloud shaped like a broken heart over her house, raining a little
+  const cy = Math.round(12 + Math.sin(t * .8) * 1.5), cx = 183;
+  ctx.globalAlpha = .28; heart(cx + 6, 44, 2, '#000', 'both'); ctx.globalAlpha = 1;
+  [[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(o => heart(cx + o[0], cy + o[1], 2, '#3a2e50', 'both'));
+  heart(cx, cy, 2, '#d8d0e8', 'both');
+  ctx.fillStyle = '#a89ac0'; HEART.slice(8).forEach((row, j) => [...row].forEach((c, i) => { const jj = j + 8; if (c === 'X' && i !== CRACK[jj]) { const left = i < CRACK[jj]; ctx.fillRect(cx + i * 2 + (left ? -2 : 2), cy + jj * 2 + (left ? 0 : 2) + 1, 2, 1); } }));
+  ctx.fillStyle = '#7ab0e8';
+  for (let k = 0; k < 6; k++) { const ry = (t * 30 + k * 11) % 26; ctx.fillRect(cx + 4 + k * 4, cy + 26 + ry, 1, 2); }
+}
+let flowT = 0;
+function guitar() {
+  if (st.buzz < 2) return say(['You pick up the guitar. Your fingers find the shapes, but nothing comes out.', "Sober, it's just wood and wire. You put it back on the stand."]);
+  say(['You pick up the guitar. Something in you loosens.', 'The room starts to bend...'], () => { st.mode = 'flow'; st.flow = { t: 0, done: false }; sfx('flow'); });
+}
+function updateFlow(dt) {
+  const f = st.flow; f.t += dt;
+  if (f.t > 6.5 && !f.done) { f.done = true;
+    fade('You drift off mid-song.', 1500, () => { st.mode = 'play'; st.buzz = Math.max(0, st.buzz - 2); go('home', 92, 96);
+      setTimeout(() => say(['You wake up in your bed. The guitar is back on its stand.', "You wrote something incredible last night. You can't remember a single note.",
+        ASK('Maybe the song you were chasing already exists.')]), 1500); }); }
+}
+function drawFlow() {
+  const t = st.flow.t, cx = W / 2 + Math.sin(t * 1.3) * 14, cy = VH / 2 + Math.cos(t * 1.1) * 8, cols = ['#ff6a9a', '#ffc24a', '#4fc3c8', '#8a6ad0', '#f2ead8'];
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#07040f'; ctx.fillRect(0, 0, W, VH);
+  for (let i = 0; i < 16; i++) { const r = (t * 52 + i * 15) % 240; if (r < 2) continue;
+    ctx.strokeStyle = cols[(i + Math.floor(t * 3)) % cols.length]; ctx.lineWidth = Math.max(1, Math.round(r / 36)); ctx.globalAlpha = Math.min(1, r / 50);
+    ctx.beginPath(); ctx.ellipse(cx, cy, r * 1.2, r * .78, t * .35 + i * .18, 0, 7); ctx.stroke(); }
+  ctx.globalAlpha = 1;
+  for (let i = 0; i < 48; i++) { const a = i * 2.4 + t * .7, d = (t * 95 + i * 37) % 210, big = d > 120 ? 2 : 1;
+    ctx.fillStyle = cols[i % 5]; ctx.fillRect(Math.round(cx + Math.cos(a) * d), Math.round(cy + Math.sin(a) * d * .7), big, big); }
+  const sc = Math.max(.25, 1.6 - t / 4.5);
+  ctx.save(); ctx.translate(Math.round(cx), Math.round(cy)); ctx.rotate(t * 1.4); ctx.scale(sc, sc);
+  ctx.drawImage(sprite('down', 0), -9, -14);
+  ctx.fillStyle = '#c8843a'; ctx.fillRect(-2, 0, 8, 6); ctx.fillStyle = '#6b4226'; ctx.fillRect(4, 1, 9, 2); ctx.restore();
+  ctx.fillStyle = 'rgba(10,8,18,.85)'; ctx.fillRect(0, 0, W, 16); ctx.fillStyle = cols[Math.floor(t * 4) % 5]; ctx.font = '6px "Press Start 2P"';
+  ctx.fillText('FLOW STATE', W / 2 - 30, 11);
+}
+
 // ===== main loop =====
 const keys = {};
 function update(dt) {
   if (['listen', 'help', 'spell', 'final'].some(id => $(id).style.display === 'flex')) return;
   st.t += dt;
-  if (['play', 'drive', 'curb', 'police'].includes(st.mode)) {
+  if (['play', 'drive', 'curb', 'police', 'flow'].includes(st.mode)) {
     const before = Math.floor(st.played); st.played += dt;
     if (Math.floor(st.played) !== before) hud();
     if (st.played >= GAME_SECONDS) return endGame('time');
@@ -699,6 +801,7 @@ function update(dt) {
   if (st.mode === 'drive') return updateDrive(dt);
   if (st.mode === 'curb') return updateCurb(dt);
   if (st.mode === 'police') return updatePolice(dt);
+  if (st.mode === 'flow') return updateFlow(dt);
   if (st.mode === 'play' && !st.lock) { st.nudgeT = (st.nudgeT || 0) + dt; if (st.nudgeT > 150) { st.nudgeT = 0; nudge(); } }
   if (st.mode !== 'play' || st.lock) { st.near = null; $('hint').style.display = 'none'; return; }
   let dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
@@ -713,7 +816,7 @@ function update(dt) {
   const s = SC[st.scene];
   if (s.doors) for (const d of s.doors) if (inR(st.x, st.y, d.r)) return enter(d.to);
   if (s.exit && inR(st.x, st.y, s.exit.r)) return leave();
-  st.near = (s.acts || []).find(a => inR(st.x, st.y, a.r)) || null;
+  st.near = (s.acts || []).concat(cupActs()).find(a => inR(st.x, st.y, a.r)) || null;
   const h = $('hint');
   if (st.near) { h.textContent = (document.body.classList.contains('phone') ? 'A' : 'SPACE') + ': ' + st.near.l; h.style.display = 'block'; } else h.style.display = 'none';
 }
@@ -722,14 +825,25 @@ function draw() {
   if (st.mode === 'drive') { CY = camTo(202 - VH * .72, 'drive'); ctx.setTransform(1, 0, 0, 1, 0, -CY); return drawDrive(); }
   if (st.mode === 'curb') { CY = camTo(188 - VH * .6, 'curb'); ctx.setTransform(1, 0, 0, 1, 0, -CY); return drawCurb(); }
   if (st.mode === 'police') { CY = camTo(196 - VH * .6, 'police'); ctx.setTransform(1, 0, 0, 1, 0, -CY); return drawPolice(); }
+  if (st.mode === 'flow') return drawFlow();
   if (st.mode !== 'play') return;
-  CY = camTo(st.y - 16 - VH / 2, 'play' + st.scene);
+  CY = camTo(st.y - 16 - VH / 2, 'play' + st.scene, (IMG[SC[st.scene].img] || {}).naturalHeight || H);
   const sway = st.buzz >= 3 ? Math.sin(st.t * 1.3) * (st.buzz - 2) * 1.5 : 0;
   const scene = () => {
-    ctx.drawImage(st.scene === 'exhouse' && st.porchOff ? IMG.exhouse_off : st.scene === 'club' && st.key ? IMG.club_nokey : IMG[SC[st.scene].img], 0, 0);
-    const fr = [0, 1, 0, 2][st.step], p = sprite(st.dir, fr);
-    ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(st.x, st.y - 1, 7, 2, 0, 0, 7); ctx.fill();
-    ctx.drawImage(p, Math.round(st.x - 9), Math.round(st.y - 27));
+    ctx.drawImage(st.scene === 'exhouse' && st.porchOff ? IMG.exhouse_off : IMG[SC[st.scene].img], 0, 0);
+    if (st.scene === 'map') drawMapFx();
+    const A = ATLAS[st.scene], ents = [];
+    if (A) {
+      A.npcs.forEach((n, i) => ents.push({ y: n.y, d: () => { const a = npcAnim(n, i);
+        ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.ellipse(n.x, n.y - 1, 7, 2, 0, 0, 7); ctx.fill(); piece(a[0], a[1], a[2]); } }));
+      A.fg.forEach(g => { if (g.name === 'key' && st.key) return; ents.push({ y: g.sy, d: () => piece(g.f, 0, 0) }); });
+    }
+    (CUPS[st.scene] || []).forEach((c, i) => { if (!(st.cups && st.cups[st.scene + i])) ents.push({ y: c[1] - 4, d: () => drawCup(c[0], c[1]) }); });
+    ents.push({ y: st.y, d: () => {
+      const fr = [0, 1, 0, 2][st.step], p = sprite(st.dir, fr);
+      ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(st.x, st.y - 1, 7, 2, 0, 0, 7); ctx.fill();
+      ctx.drawImage(p, Math.round(st.x - 9), Math.round(st.y - 27)); } });
+    ents.sort((a, b) => a.y - b.y).forEach(e => e.d());
     if (st.near) { const bx = Math.round(st.x - 3), by = Math.round(st.y - 40); ctx.fillStyle = OUT; ctx.fillRect(bx - 1, by - 1, 8, 11);
       ctx.fillStyle = '#ffc24a'; ctx.fillRect(bx, by, 6, 9); ctx.fillStyle = OUT; ctx.fillRect(bx + 2, by + 1, 2, 4); ctx.fillRect(bx + 2, by + 6, 2, 2); }
   };
@@ -972,7 +1086,7 @@ $('rndBtn').onclick = () => { const r = n => Math.floor(Math.random() * n); Obje
 $('newBtn').onclick = () => { startMusic(); closeOv('title'); renderCreator(); openOv('creator'); };
 $('startBtn').onclick = () => {
   st.look = lookFrom(); closeOv('creator');
-  Object.assign(st, { mode: 'intro', courage: 1, buzz: 3, key: false, watched: false, porchOff: false, knocks: 0, played: 0, drinks: 0 }); hud();
+  Object.assign(st, { mode: 'intro', courage: 1, buzz: 3, key: false, watched: false, porchOff: false, knocks: 0, played: 0, drinks: 0, cups: {}, cupN: 0 }); hud();
   go('map', MAPSPAWN.home[0], MAPSPAWN.home[1]);
   const f = $('fade'); f.style.transition = 'none'; f.style.opacity = 1; f.innerHTML = '<span>"Drunk and on my way home,\ncall you just to say I\'m coming over baby."</span><span class="fattr">' + ATTR + '</span>'; st.lock = true;
   setTimeout(() => { f.style.transition = ''; startDrive('home', false, true); f.style.opacity = 0; }, 3600);
@@ -1014,6 +1128,7 @@ function sfx(k) {
   if (k === 'knock') { tone(140, t, .08, 'square', .15); tone(140, t + .18, .08, 'square', .15); tone(140, t + .36, .08, 'square', .15); }
   if (k === 'siren') { for (let i = 0; i < 6; i++) { const o = AC.createOscillator(), g = AC.createGain(); o.type = 'square'; o.frequency.setValueAtTime(650, t + i * .7); o.frequency.linearRampToValueAtTime(950, t + i * .7 + .35); o.frequency.linearRampToValueAtTime(650, t + i * .7 + .7);
     g.gain.setValueAtTime(.05, t + i * .7); g.gain.linearRampToValueAtTime(0.0001, t + i * .7 + .7); o.connect(g); g.connect(master); o.start(t + i * .7); o.stop(t + i * .7 + .72); } }
+  if (k === 'flow') { [262, 330, 392, 494, 587, 659, 784, 988].forEach((f, i) => tone(f, t + i * .14, .9, 'triangle', .05)); }
   if (k === 'win') { [262, 330, 392, 523, 659, 784].forEach((f, i) => tone(f, t + i * .12, .4, 'square', .07)); }
 }
 $('soundBtn').onclick = e => { e.currentTarget.blur(); musicOn = !musicOn; fit();
@@ -1021,8 +1136,8 @@ $('soundBtn').onclick = e => { e.currentTarget.blur(); musicOn = !musicOn; fit()
 
 // ===== layout =====
 let CY = 0; let VH = H; const cam = { y: 0, key: '' };
-function camTo(target, key) {
-  const tgt = Math.max(0, Math.min(H - VH, Math.round(target)));
+function camTo(target, key, sh) {
+  const tgt = Math.max(0, Math.min((sh || H) - VH, Math.round(target)));
   if (cam.key !== key) { cam.key = key; cam.y = tgt; } else cam.y += (tgt - cam.y) * .18;
   return Math.round(cam.y);
 }
