@@ -14,10 +14,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <style>
 /* VOICE: a late-night arcade cabinet, a little sad, a little funny.
-   IDEA: a 16-bit handheld: on a phone it is held sideways, pad left, A button right; on a computer it is a cabinet screen.
+   IDEA: a 16-bit handheld: on a phone it is held upright like a Game Boy (screen on top, text window, stick and A below); on a computer it is a cabinet with side panels.
    PICTURE: the game screen itself, pixel-perfect, as large as the device allows.
    COLOUR and TYPE: ink-black housing, cream text, whiskey amber and neon pink; Press Start 2P + VT323.
-   LAYOUT: landing picks phone or computer; phones play landscape with controls on both sides. */
+   LAYOUT: landing picks phone or computer; phones play upright (landscape still works), computers get side panels on wide screens. */
 :root{color-scheme:dark;--bg:#0a0812;--panel:#16122a;--ink:#f2ead8;--dim:#a9a2c2;--amber:#ffc24a;--pink:#ff6a9a;--line:#3a3456}
 *{box-sizing:border-box;min-width:0}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:'VT323',monospace;overflow:hidden;touch-action:manipulation;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
@@ -44,7 +44,7 @@ body.land #clock{font-size:9px}
 #padRtop{display:flex;flex-direction:column;gap:8px;align-items:stretch;width:100%}
 #padRtop:empty{display:none}
 body.land #padRtop .hbtn{height:36px;width:100%;font-size:8px}
-body.land #title .menu{flex-direction:row;left:50%;transform:translateX(-50%);bottom:4%;padding:8px}
+body.land #title .menu{flex-direction:row;flex-wrap:wrap;justify-content:center;width:max-content;max-width:94%;left:50%;transform:translateX(-50%);bottom:4%;padding:8px}
 body.land .padlab{display:none}
 #stick{position:relative;width:136px;height:136px;border-radius:50%;background:radial-gradient(circle,#241e3a 0 55%,#1a1530 56%);border:4px solid #000;box-shadow:inset 0 3px 0 rgba(255,255,255,.08),0 0 0 3px var(--line);touch-action:none}
 #stick i{position:absolute;color:var(--dim);font-style:normal;font-family:'Press Start 2P',monospace;font-size:11px}
@@ -53,35 +53,38 @@ body.land .padlab{display:none}
 #aBtn:active,#aBtn.down{transform:translateY(2px);box-shadow:inset 0 2px 0 #ffc0d4,0 0 0 3px var(--line)}
 .padlab{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--dim);text-align:center;line-height:1.6}
 #hud{display:flex;align-items:center;gap:7px;height:40px;padding:0 8px;background:var(--panel);border-bottom:4px solid #000;box-shadow:inset 0 2px 0 #2e2850;white-space:nowrap}
-#hud .lab{font-family:'Press Start 2P',monospace;font-size:7px}
+#hud .lab{font-family:'Press Start 2P',monospace;font-size:8px}
 .meter{display:flex;gap:2px}.meter i{width:10px;height:10px;border:2px solid #000;background:#2a2440}
 .meter.c i.on{background:#f0a73a;box-shadow:inset 0 2px 0 #ffd890}.meter.b i.on{background:#e0567a;box-shadow:inset 0 2px 0 #ffb0c8}
 #clock{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--amber);padding:4px 5px;background:#000;border:2px solid var(--line)}
 #clock.low{color:var(--pink);border-color:var(--pink)}
-#loc{margin-left:auto;font-family:'Press Start 2P',monospace;font-size:7px;overflow:hidden;text-overflow:ellipsis}
-#keyico{display:none;font-family:'Press Start 2P',monospace;font-size:7px;color:#0f0d1a;background:var(--amber);padding:4px 5px;border:2px solid #000;white-space:nowrap}
+#loc{margin-left:auto;font-family:'Press Start 2P',monospace;font-size:8px;overflow:hidden;text-overflow:ellipsis}
+#keyico{display:none;font-family:'Press Start 2P',monospace;font-size:8px;color:#0f0d1a;background:var(--amber);padding:4px 5px;border:2px solid #000;white-space:nowrap}
 @keyframes keyin{0%{transform:scale(2)}100%{transform:scale(1)}}#keyico.new{animation:keyin .5s steps(4)}
-.hbtn{height:30px;padding:0 7px;border:2px solid #000;font-family:'Press Start 2P',monospace;font-size:7px;cursor:pointer;color:#0f0d1a}
-#listenBtn{background:var(--pink);box-shadow:inset 0 2px 0 #ffc0d4}#hintBtn{background:var(--amber);box-shadow:inset 0 2px 0 #fff0b0}#soundBtn{background:#2a2244;color:var(--ink)}
+.hbtn{height:30px;padding:0 7px;border:2px solid #000;font-family:'Press Start 2P',monospace;font-size:8px;cursor:pointer;color:#0f0d1a}
+#listenBtn{background:var(--pink);box-shadow:inset 0 2px 0 #ffc0d4}#hintBtn{background:var(--amber);box-shadow:inset 0 2px 0 #fff0b0}#soundBtn{background:#2a2244;color:var(--ink)}#journalBtn{background:#4fc3c8;box-shadow:inset 0 2px 0 #b8f0f2}.hbtn small{font-size:inherit;opacity:.6;margin-left:4px}
+#journalBtn.pulse{animation:pulse .5s 4}
 canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 .ov{position:absolute;left:0;right:0;bottom:0;top:var(--hudH,44px);display:none}
 .box{background:var(--panel);border:4px solid var(--ink);box-shadow:0 0 0 4px #000,6px 6px 0 4px #000}
 #dlg{position:absolute;left:8px;right:8px;bottom:8px;padding:calc(6px + 3px*var(--s)) calc(8px + 3px*var(--s));display:none;font-size:calc(11px + 4.6px*var(--s));line-height:1.05;max-height:calc(100% - 16px);overflow:auto}
 #dlg .who{font-family:'Press Start 2P',monospace;font-size:calc(6px + 1.5px*var(--s));color:var(--amber);margin-bottom:6px}
 #dlg .ly{color:#ffb0c8;font-style:italic}
-.attr{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--dim);margin-top:6px;line-height:1.6;font-style:normal}
+.attr{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--dim);margin-top:6px;line-height:1.6;font-style:normal}
 #fade .fly{display:block;margin-top:14px;color:#ffb0c8}
 #fade .fattr{display:block;margin-top:12px;font-size:7px;color:var(--dim)}
-#toast{position:absolute;right:8px;top:calc(var(--hudH,44px) + 6px);max-width:250px;padding:8px 10px;background:var(--pink);color:#0f0d1a;border:3px solid #000;box-shadow:4px 4px 0 #000;font-family:'Press Start 2P',monospace;font-size:8px;line-height:1.6;cursor:pointer;display:none}
+#banner{position:absolute;left:50%;top:calc(var(--hudH,44px) + 8px);transform:translateX(-50%);max-width:calc(100% - 16px);padding:8px 10px;background:var(--amber);color:#0f0d1a;border:3px solid #000;box-shadow:4px 4px 0 #000;font-family:'Press Start 2P',monospace;font-size:9px;line-height:1.6;text-align:center;display:none;z-index:4;pointer-events:none}
+#toast{position:absolute;right:8px;top:calc(var(--hudH,44px) + 6px);max-width:250px;padding:8px 10px;background:var(--pink);color:#0f0d1a;border:3px solid #000;box-shadow:4px 4px 0 #000;font-family:'Press Start 2P',monospace;font-size:9px;line-height:1.6;cursor:pointer;display:none}
 @keyframes pulse{50%{transform:scale(1.15)}}
 #listenBtn.pulse{animation:pulse .5s 6}
-#dlg .more{font-family:'Press Start 2P',monospace;font-size:7px;color:var(--dim);text-align:right;margin-top:6px}
+#dlg.top{top:8px;bottom:auto}
+#dlg .more{font-family:'Press Start 2P',monospace;font-size:8px;color:var(--dim);text-align:right;margin-top:6px}
 .choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .btn{min-height:40px;padding:0 12px;background:#2a2244;color:var(--ink);border:3px solid #000;box-shadow:inset 0 3px 0 rgba(255,255,255,.15);font-family:'Press Start 2P',monospace;font-size:9px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.4}
 .btn:focus-visible,.hbtn:focus-visible,.opt:focus-visible,.pick:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 .btn.hot{background:var(--amber);color:#0f0d1a;box-shadow:inset 0 3px 0 #fff0b0,inset 0 -4px 0 #c0601a}
 .btn.pink{background:var(--pink);color:#0f0d1a}
-#hint{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);padding:6px 8px;background:rgba(10,8,18,.85);border:2px solid var(--line);font-family:'Press Start 2P',monospace;font-size:8px;color:var(--amber);white-space:nowrap;display:none}
+#hint{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);padding:6px 8px;background:rgba(10,8,18,.85);border:2px solid var(--line);font-family:'Press Start 2P',monospace;font-size:9px;color:var(--amber);white-space:nowrap;display:none}
 #fade{flex-direction:column;white-space:pre-line;position:absolute;inset:var(--hudH,44px) 0 0 0;background:#000;opacity:0;pointer-events:none;transition:opacity .6s;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Press Start 2P',monospace;font-size:calc(8px + 1.6px*var(--s));line-height:1.8;color:var(--pink);padding:16px}
 #title{background:#0a0812;inset:0;top:0}
 #title img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;image-rendering:pixelated}
@@ -102,13 +105,20 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 .sw{width:34px;height:34px;padding:0;border:3px solid #000;cursor:pointer;box-shadow:inset 0 3px 0 rgba(255,255,255,.3)}
 .sw.on{border-color:var(--amber)}
 #eli{border-color:var(--pink);color:var(--pink);background:#2a2244}#eli.on{background:var(--pink);color:#0f0d1a}
-#listen,#help{z-index:6}
-#listen,#spell,#final,#help{background:rgba(10,8,18,.8);align-items:center;justify-content:center;padding:10px}
+#listen,#help,#journal{z-index:6}
+#listen,#spell,#final,#help,#journal{background:rgba(10,8,18,.8);align-items:center;justify-content:center;padding:10px}
 .pop{width:min(440px,100%);padding:14px;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto}
 .pop h3{margin:0;font-family:'Press Start 2P',monospace;font-size:12px;color:var(--amber);line-height:1.5}
 .note{padding:10px;background:var(--pink);color:#0f0d1a;border:2px solid #000;font-family:'Press Start 2P',monospace;font-size:10px;line-height:1.6;text-align:center}
 .plat{display:flex;justify-content:space-between;align-items:center;min-height:44px;padding:0 12px;background:#000;border:2px solid var(--line);color:var(--ink);text-decoration:none;font-family:'Press Start 2P',monospace;font-size:10px}
 .plat span{font-family:'VT323',monospace;font-size:19px;color:var(--dim)}
+.lnote{text-align:center;color:var(--dim);font-size:19px;line-height:1.05}
+.lnote b{color:var(--amber);font-weight:400}
+#jList{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;font-size:21px;line-height:1.05;color:#ffb0c8;font-style:italic}
+#jList li::marker{color:var(--dim);font-style:normal;font-family:'Press Start 2P',monospace;font-size:8px}
+.jbridge{padding:10px;background:#000;border:2px dashed var(--pink);font-size:22px;line-height:1.1;text-align:center}
+.jbridge .ps{display:block;font-size:8px;color:var(--pink);margin-bottom:6px}
+@media(max-height:520px){.plat{min-height:36px}.pop{gap:7px;padding:10px}.note{padding:6px;font-size:9px}}
 .plat:hover{border-color:var(--amber)}
 #spell .pop img{width:100%;max-height:calc(60px + 40px*var(--s));object-fit:cover;image-rendering:pixelated;border:2px solid #000}
 #spellIn{height:46px;padding:0 10px;background:#000;border:3px solid var(--line);color:var(--ink);font-size:22px;width:100%}
@@ -124,7 +134,7 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 .shares{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:6px}
 .shares .btn{min-height:40px;font-size:8px;padding:0 6px}
 .tip{font-size:19px;line-height:1.05;color:var(--dim)}
-/* landing + rotate */
+/* landing */
 .full{position:fixed;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;text-align:center;background:#0a0812}
 #landing{display:flex;background:linear-gradient(rgba(10,8,18,.55),rgba(10,8,18,.88)),url(img/title.png) center/cover;image-rendering:pixelated}
 #landing h1{margin:0;font-family:'Press Start 2P',monospace;font-size:clamp(40px,11vw,84px);color:var(--amber);text-shadow:0 5px 0 #c0601a,0 10px 0 #5a2410,5px 13px 0 #000}
@@ -138,19 +148,57 @@ canvas{display:block;image-rendering:pixelated;image-rendering:crisp-edges}
 .pick em{font-style:normal;font-family:'Press Start 2P',monospace;font-size:7px;color:#0f0d1a;background:var(--pink);padding:4px 6px}
 .ico{display:block;image-rendering:pixelated}
 .hstip{max-width:560px;padding:8px 10px;background:#000;border:2px solid var(--amber);color:var(--amber);font-size:18px;line-height:1.05}
-#rotate .ph{width:60px;height:100px;border:6px solid var(--ink);border-radius:8px;position:relative;animation:turn 2.4s ease-in-out infinite}
-#rotate .ph::after{content:"";position:absolute;left:50%;bottom:6px;width:10px;height:4px;margin-left:-5px;background:var(--ink)}
-@keyframes turn{0%,25%{transform:rotate(0)}55%,100%{transform:rotate(-90deg)}}
-@media(orientation:portrait){body.phone:not(.upright) #rotate{display:flex}}
 .pick{position:relative}.pick em{position:absolute;top:-12px;left:50%;transform:translateX(-50%);white-space:nowrap}
 @media(max-height:520px){.hstip{font-size:15px;padding:5px 8px}#landing{gap:8px;padding:10px}#landing h1{font-size:38px}#landing .tip{display:none}.picks{width:min(780px,100%)}
   .pick{flex-direction:row;text-align:left;padding:12px 14px;gap:12px}.pick .ico{flex:0 0 auto}.pick span{font-size:17px}.pick>div{display:flex;flex-direction:column;gap:6px}}
-body.phone #creator,body.phone #listen,body.phone #spell,body.phone #final,body.phone #help{position:fixed;inset:0;z-index:15;
+body.phone #creator,body.phone #listen,body.phone #spell,body.phone #final,body.phone #help,body.phone #journal{position:fixed;inset:0;z-index:15;
   padding:max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left))}
 body.phone #final{background:rgba(10,8,18,.97)}body.phone #creator{background:var(--bg)}
-body.phone #listen,body.phone #help{z-index:16}
+body.phone #listen,body.phone #help,body.phone #journal{z-index:16}
 @media(orientation:landscape){body.phone #final .pop{max-height:100%;flex-wrap:nowrap}body.phone #final .card img{width:auto;height:calc(100vh - 130px);max-height:calc(100dvh - 130px)}body.phone #final .info{overflow:auto;max-height:calc(100dvh - 60px)}}
-@media(prefers-reduced-motion:reduce){#fade{transition:none}#listenBtn.pulse{animation:none;outline:3px solid var(--amber)}#rotate .ph{animation:none;transform:rotate(-90deg)}}
+@media(prefers-reduced-motion:reduce){#fade{transition:none}#listenBtn.pulse,#journalBtn.pulse{animation:none;outline:3px solid var(--amber)}}
+body.comfort #listenBtn.pulse,body.comfort #journalBtn.pulse{animation:none;outline:3px solid var(--amber)}
+/* upright phones: screen on top, text window in the middle, stick | buttons | A at the bottom */
+#dock{grid-area:d;display:none;flex-direction:column;min-height:0;position:relative}
+#padM{grid-area:m;display:none;flex-direction:column;gap:8px;justify-content:center;align-items:stretch;min-width:0}
+#idle{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:10px 12px;min-height:0;overflow:hidden}
+#idleLoc{font-family:'Press Start 2P',monospace;font-size:9px;color:var(--dim)}
+#idleTxt{font-size:23px;line-height:1.05}
+#idleTxt b{font-family:'Press Start 2P',monospace;font-weight:400;font-size:11px;color:#0f0d1a;background:var(--pink);padding:3px 6px;border:2px solid #000;margin-right:4px}
+body.port #app{grid-template-areas:"s s s" "d d d" "l m r";grid-template-columns:auto minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr) auto;place-content:stretch;place-items:stretch;gap:10px}
+body.port #screen{justify-self:center;align-self:start}
+body.port #dock,body.port #padM{display:flex}
+body.port #padL,body.port #padR{align-self:center}
+body.port #padR .padlab{display:none}
+body.port #padM .hbtn{height:36px;width:100%;font-size:9px}
+body.port #hud{height:auto;min-height:38px;flex-wrap:wrap;padding:6px 8px;gap:6px 8px}
+body.port #loc,body.port #hint{display:none!important}
+body.port #dlg{position:relative;left:auto;right:auto;bottom:auto;top:auto;flex:1 1 auto;max-height:100%;font-size:23px;line-height:1.05;padding:10px 12px}
+body.port #dlg .who{font-size:9px}
+body.talking #idle{display:none}
+body.port #title img{max-height:34vh;object-fit:cover}
+@media(max-height:720px){body.port #dlg{font-size:20px;padding:8px 10px}body.port .choices{margin-top:6px;gap:6px}body.port .choices .btn{min-height:34px;font-size:8px;padding:0 8px}
+  body.port #title h1{font-size:34px}body.port #title .sub2{font-size:20px}body.port #title .menu{gap:5px;padding:8px}body.port #title .menu .btn{min-height:34px}body.port #padM .hbtn{height:32px}}
+.full{overflow:auto;justify-content:safe center}
+body.port #title{position:fixed;inset:0;z-index:15;flex-direction:column;overflow:auto;background:#0a0812;padding:max(10px,env(safe-area-inset-top)) 12px max(14px,env(safe-area-inset-bottom))}
+body.port #title img{position:relative;inset:auto;height:auto;aspect-ratio:296/248;flex:0 0 auto;border:4px solid #000;outline:3px solid var(--line)}
+body.port #title .wrap{position:relative;inset:auto;padding:14px 4px 0;gap:6px}
+body.port #title h1{font-size:46px}body.port #title .sub{font-size:9px}body.port #title .sub2{font-size:24px}
+body.port #title .menu{position:static;transform:none;margin-top:12px;width:min(330px,100%)}
+/* wide computers: stats panel left, buttons right, big integer-scaled screen */
+body.side #app{grid-template-areas:"l s r";gap:22px}
+body.side .pad{display:flex;flex-direction:column;justify-content:center;align-items:stretch;gap:14px;align-self:center}
+body.side #padL{width:200px}body.side #padR{width:170px}
+body.side #stick,body.side #aBtn,body.side .padlab{display:none}
+body.side #hud{flex-wrap:wrap;height:auto;width:200px;gap:10px 8px;padding:12px;border:4px solid #000;outline:3px solid var(--line);box-shadow:inset 0 2px 0 #2e2850}
+body.side #hud .lab{width:62px;font-size:9px}body.side #hud .lab[style]{margin-left:0!important}
+body.side .meter i{width:12px;height:12px}
+body.side #loc{margin-left:0;width:100%;display:block!important;color:var(--dim);font-size:9px}
+body.side #clock{font-size:12px}body.side #keyico{font-size:9px}
+body.side #padRtop .hbtn{height:46px;width:100%;font-size:10px}
+#keysLeg{display:none;padding:10px;background:var(--panel);border:4px solid #000;outline:3px solid var(--line);font-size:19px;line-height:1.15;color:var(--dim)}
+#keysLeg b{font-family:'Press Start 2P',monospace;font-weight:400;font-size:9px;color:var(--amber)}
+body.side #keysLeg{display:block}
 </style>
 </head>
 <body>
@@ -159,20 +207,14 @@ body.phone #listen,body.phone #help{z-index:16}
 <h1>DRUNK</h1>
 <div class="q">HOW ARE YOU PLAYING TONIGHT?</div>
 <div class="picks">
-<button class="pick" id="pickPhone"><svg class="ico" width="72" height="44" viewBox="0 0 18 11" shape-rendering="crispEdges" aria-hidden="true"><rect x="0" y="0" width="18" height="11" fill="#f2ead8"/><rect x="1" y="1" width="16" height="9" fill="#0a0812"/><rect x="3" y="3" width="2" height="5" fill="#a9a2c2"/><rect x="2" y="4" width="4" height="3" fill="#a9a2c2"/><rect x="6" y="2" width="6" height="7" fill="#3a3456"/><rect x="13" y="4" width="3" height="3" fill="#ff6a9a"/></svg><div><b>ON MY PHONE</b><span>Turn it sideways. Pad on the left, A button on the right.</span></div></button>
+<button class="pick" id="pickPhone"><svg class="ico" width="44" height="72" viewBox="0 0 11 18" shape-rendering="crispEdges" aria-hidden="true"><rect x="0" y="0" width="11" height="18" fill="#f2ead8"/><rect x="1" y="1" width="9" height="16" fill="#0a0812"/><rect x="2" y="2" width="7" height="6" fill="#3a3456"/><rect x="2" y="9" width="7" height="2" fill="#16122a"/><rect x="2" y="13" width="3" height="1" fill="#a9a2c2"/><rect x="3" y="12" width="1" height="3" fill="#a9a2c2"/><rect x="7" y="12" width="2" height="2" fill="#ff6a9a"/></svg><div><b>ON MY PHONE</b><span>Hold it upright like a handheld. Stick bottom left, A button bottom right.</span></div></button>
 <button class="pick" id="pickDesk"><svg class="ico" width="72" height="44" viewBox="0 0 18 11" shape-rendering="crispEdges" aria-hidden="true"><rect x="2" y="0" width="14" height="8" fill="#f2ead8"/><rect x="3" y="1" width="12" height="6" fill="#3a3456"/><rect x="7" y="8" width="4" height="1" fill="#a9a2c2"/><rect x="0" y="9" width="18" height="2" fill="#a9a2c2"/></svg><div><b>ON A COMPUTER</b><span>Arrow keys or WASD to move. Space to interact.</span></div></button>
 </div>
 <div class="tip" style="max-width:520px">Sound on. The soundtrack is an 8-bit version of "Drunk".</div>
 <div class="hstip" id="hsTip" style="display:none">FULL SCREEN TIP: tap Share, then "Add to Home Screen", and launch Drunk from your home screen. No browser bars.</div>
 </div>
-<div id="rotate" class="full" role="dialog" aria-label="Turn your phone sideways">
-<div class="ph" aria-hidden="true"></div>
-<div class="ps" style="font-size:13px;line-height:1.7;color:var(--amber)">TURN YOUR PHONE SIDEWAYS</div>
-<div class="tip" style="max-width:320px">Drunk plays best held like a handheld. If rotation is locked, open Control Center and turn it off.</div>
-<button class="btn" id="uprightBtn">PLAY UPRIGHT INSTEAD</button>
-</div>
 <div id="app">
-<div id="padL" class="pad"><div id="stick" aria-label="Movement pad"><i style="left:50%;top:8px;transform:translateX(-50%)">&#9650;</i><i style="left:50%;bottom:8px;transform:translateX(-50%)">&#9660;</i><i style="left:9px;top:50%;transform:translateY(-50%)">&#9664;</i><i style="right:9px;top:50%;transform:translateY(-50%)">&#9654;</i><div id="knob"></div></div></div>
+<div id="padL" class="pad"><div id="keysLeg"><b>MOVE</b><br>Arrow keys or WASD<br><br><b>TALK / USE</b><br>Space or Enter<br><br><b>CHOOSE</b><br>Arrow keys, then Space<br><br><b>SHORTCUTS</b><br>L listen, H hint, J lyrics, Esc close</div><div id="stick" aria-label="Movement pad"><i style="left:50%;top:8px;transform:translateX(-50%)">&#9650;</i><i style="left:50%;bottom:8px;transform:translateX(-50%)">&#9660;</i><i style="left:9px;top:50%;transform:translateY(-50%)">&#9664;</i><i style="right:9px;top:50%;transform:translateY(-50%)">&#9654;</i><div id="knob"></div></div></div>
 <div id="screen">
 <div id="hud">
 <span class="lab" style="color:#f0a73a">COURAGE</span><div class="meter c" id="mC"></div>
@@ -181,6 +223,7 @@ body.phone #listen,body.phone #help{z-index:16}
 <span id="keyico" aria-label="You have the closet key"><svg width="16" height="8" viewBox="0 0 8 4" shape-rendering="crispEdges" aria-hidden="true" style="vertical-align:middle;margin-right:4px"><rect x="0" y="0" width="3" height="3" fill="#0f0d1a"/><rect x="1" y="1" width="1" height="1" fill="#ffc24a"/><rect x="3" y="1" width="5" height="1" fill="#0f0d1a"/><rect x="5" y="2" width="1" height="2" fill="#0f0d1a"/><rect x="7" y="2" width="1" height="2" fill="#0f0d1a"/></svg>CLOSET KEY</span>
 <span id="loc">HOME</span>
 <button class="hbtn" id="soundBtn" aria-label="Toggle sound">SOUND ON</button>
+<button class="hbtn" id="journalBtn" aria-label="Lyric journal">LYRICS</button>
 <button class="hbtn" id="hintBtn">HINT</button>
 <button class="hbtn" id="listenBtn">LISTEN</button>
 </div>
@@ -189,6 +232,7 @@ body.phone #listen,body.phone #help{z-index:16}
 <div id="dlg" class="box" role="dialog" aria-live="polite"></div>
 <div id="fade"></div>
 <button id="toast">STUCK? THE ANSWER IS IN THE LYRICS. TAP LISTEN.</button>
+<div id="banner" role="status" aria-live="polite"></div>
 
 <div id="title" class="ov" style="top:0">
 <img src="img/title.png" alt="">
@@ -198,9 +242,11 @@ body.phone #listen,body.phone #help{z-index:16}
 <div class="sub">A GAME ABOUT ELI LIE'S SINGLE</div>
 <div class="sub2">and maybe also your life?</div>
 <div class="menu box">
+<button class="btn hot" id="contBtn" style="display:none">CONTINUE</button>
 <button class="btn hot" id="newBtn">NEW LIFE</button>
 <button class="btn" id="howBtn">HOW TO PLAY</button>
 <button class="btn pink" id="tListen">LISTEN</button>
+<button class="btn" id="comfortBtn" aria-pressed="false">COMFORT MODE: OFF</button>
 </div>
 </div>
 </div>
@@ -231,14 +277,16 @@ body.phone #listen,body.phone #help{z-index:16}
 <div style="display:flex;justify-content:space-between;align-items:center"><h3>LISTEN TO "DRUNK"</h3><button class="btn" id="lClose" aria-label="Close">X</button></div>
 <div class="note">THE ANSWER IS IN THE LYRICS.</div>
 <div id="plats" style="display:flex;flex-direction:column;gap:8px"></div>
-<div style="text-align:center;color:var(--dim);font-size:19px">Opens outside the game. Your night (and the clock) stays paused.</div>
+<div class="lnote" id="lBridge" style="display:none"></div>
+<div class="lnote">The 8-bit soundtrack has no words. You need Eli's voice.</div>
+<div class="lnote">Opens outside the game. Your night (and the clock) stays paused, and you get something for listening.</div>
 </div>
 </div>
 
 <div id="spell" class="ov" role="dialog" aria-label="The box of memories">
 <div class="pop box">
 <img src="img/memorybox.png" alt="An open box of memories with shadows rising out of it">
-<label for="spellIn" class="ps" style="font-size:10px;color:var(--amber);line-height:1.6">WHAT TO DO WITH THESE SHADOWS?</label>
+<label for="spellIn" class="ps" style="font-size:13px;color:var(--amber);line-height:1.6;text-align:center">WHAT TO DO WITH THESE SHADOWS?</label>
 <div style="display:flex;gap:8px"><input id="spellIn" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" placeholder="Type your spell"><button class="btn hot" id="castBtn">CAST</button></div>
 <div id="spellMsg" style="font-size:20px;color:var(--dim)">Type the words. Press CAST or Enter.</div>
 <div class="row"><button class="btn pink" id="sListen" style="display:none">THE ANSWER IS IN THE LYRICS</button><button class="btn" id="sClose">STEP AWAY</button></div>
@@ -252,14 +300,28 @@ body.phone #listen,body.phone #help{z-index:16}
 <div class="tip" id="saveTip">Press and hold the picture to save it to your photos.</div>
 </div>
 <div class="info">
+<button class="btn pink" id="eListen" style="min-height:52px;font-size:12px">HEAR THE WHOLE SONG</button>
+<div class="ps" id="fEnding" style="font-size:9px;color:var(--pink)">ENDING</div>
 <h3 id="fTitle" style="font-size:15px">LAST CALL.</h3>
 <div id="fBody" style="font-size:22px;line-height:1.05"></div>
 <div class="stats"><div class="stat">TIME<b id="fTime">6:00</b></div><div class="stat">DRINKS<b id="fDrinks">0</b></div></div>
 <div class="row"><button class="btn hot" id="shareBtn">SHARE PICTURE</button><button class="btn" id="saveBtn">SAVE PICTURE</button><button class="btn" id="copyBtn">COPY LINK</button></div>
 <div class="shares" id="shares"></div>
 <div class="tip">Instagram, TikTok and Snapchat don't take links from websites: save the picture, then post it from the app.</div>
-<div class="row"><button class="btn pink" id="eListen">LISTEN TO "DRUNK"</button><button class="btn" id="againBtn">PLAY AGAIN</button></div>
+<div class="row"><button class="btn" id="againBtn">PLAY AGAIN</button></div>
 </div>
+</div>
+</div>
+
+<div id="journal" class="ov" role="dialog" aria-label="Lyric journal">
+<div class="pop box">
+<div style="display:flex;justify-content:space-between;align-items:center"><h3>LYRICS YOU'VE FOUND</h3><button class="btn" id="jClose" aria-label="Close">X</button></div>
+<div class="note" id="jCount">0 FOUND</div>
+<ol id="jList"></ol>
+<div class="jbridge"><span class="ps">THE BRIDGE: THE SPELL</span>"_______ __ ______"</div>
+<div class="lnote" id="jCups"></div>
+<div class="attr" style="text-align:center">All lyrics: 'Drunk' by Eli Lie (single, 2026)</div>
+<button class="btn pink" id="jListen">FILL IN THE BLANKS: LISTEN</button>
 </div>
 </div>
 
@@ -272,6 +334,8 @@ body.phone #listen,body.phone #help{z-index:16}
 </div>
 </div>
 <div id="padR" class="pad"><div id="padRtop"></div><div style="display:flex;flex-direction:column;align-items:center;gap:8px"><button id="aBtn" aria-label="Interact">A</button><div class="padlab">TALK<br>USE<br>NEXT</div></div></div>
+<div id="dock"><div id="idle" class="box"><div id="idleLoc">HOME</div><div id="idleTxt">Walk up to things and press A.</div></div></div>
+<div id="padM"></div>
 </div>
 <script>
 {
@@ -282,14 +346,26 @@ const LINKS = [
   ['YOUTUBE', ''],
   ['AMAZON MUSIC', '']
 ];
-const AUDIO = { background: '8%20bit%20version.mp3' }; // the jukebox restarts this track from the top
+const AUDIO = { background: '8%20bit%20version.mp3', // the 8-bit soundtrack
+  preview: '' }; // optional: a 20 to 30 second clip of the real recording (the hook, never the bridge). The tavern jukebox plays it.
+const BRIDGE = { label: '', seconds: 0 }; // where the spell is sung in the real song, e.g. { label: '2:40', seconds: 160 }. Shown in the last hint; YouTube opens there.
+const UTM = 'utm_source=drunkgame&utm_medium=game'; // added to every platform link so you can see which prompt sent the listen
 const GAME_SECONDS = 360;
 const FALLBACK_URL = 'https://claude.ai/artifact/VLApBAbQCyQiqwe6XAvcmd'; // swap for your own site when you host the game
 const SITE = (/^https?:$/.test(location.protocol) && !/claude|anthropic|usercontent/i.test(location.hostname)) ? location.origin + location.pathname : FALLBACK_URL;
 const SPELL = 'denmadebswodahs'.split('').reverse().join('');
-const L = s => ({ t: '"' + s + '"', ly: true });
+const L = s => ({ t: '"' + s + '"', ly: true, raw: s });
+// every lyric the game can show (the bridge is never here). The journal counts against this list.
+const LYRIC_POOL = ["Drunk and on my way home, call you just to say I'm coming over baby.", "It's tunnel vision for me.",
+  'The soothing poem that wraps my car around convenient tree.', "And as the line's going dead you said you never really left the couch baby.",
+  'Can I come by and say hello and we can always slow dance maybe.', 'Ah oooooo, love me lordy like you used to wanna.', 'Ah oooooo, love me love me like you were my mama.',
+  'Rumors in the back rows.', 'Faces in the shrouds.', 'Cut in the dark. The ones we let drown and the others in the ark.', 'The pearly gates indeed.'];
 const ATTR = "'Drunk' by Eli Lie (single, 2026)";
-const ASK = t => ({ t, ch: [['LATER', () => {}], ['LISTEN FOR CLUES', () => openListen(), 'pink']] });
+const ASK = t => ({ t, ch: [['LATER', () => {}], ['LISTEN FOR CLUES', () => openListen('prompt'), 'pink']] });
+const isPhone = () => document.body.classList.contains('phone');
+const CTL = () => isPhone() ? { move: 'Drag the stick to move.', act: 'A', steer: 'Steer with the stick.', more: 'TAP' }
+  : { move: 'Arrow keys or WASD to move.', act: 'SPACE', steer: 'LEFT and RIGHT (or A and D) to steer.', more: 'SPACE' };
+let comfort = (() => { try { const v = localStorage.getItem('drunk_comfort'); if (v !== null) return v === '1'; } catch (_) {} return matchMedia('(prefers-reduced-motion: reduce)').matches; })();
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
 // ===== basics =====
@@ -302,7 +378,8 @@ const ATLAS = {"tavern":{"npcs":[{"name":"bartender","x":128,"y":82,"kind":"bar"
 ['map', 'home', 'tavern', 'club', 'exhouse', 'exhouse_off', 'title', 'atlas'].forEach(n => { const i = new Image(); i.src = 'img/' + n + '.png'; IMG[n] = i; });
 
 const st = { mode: 'title', scene: 'home', x: 100, y: 182, dir: 'down', step: 0, stepT: 0, courage: 0, buzz: 0, key: false,
-  watched: false, porchOff: false, knocks: 0, played: 0, drinks: 0, cups: {}, cupN: 0, t: 0, look: null, drive: null, curb: null, near: null, lock: false };
+  watched: false, porchOff: false, knocks: 0, played: 0, drinks: 0, cups: {}, cupN: 0, t: 0, look: null, drive: null, curb: null, near: null, lock: false,
+  journal: [], cops: 0, water: false, backs: 0, outAt: 0, warned: false };
 
 // ===== sprite =====
 function rgb(h) { return [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)); }
@@ -393,14 +470,14 @@ const SC = {
     doors: [{ r: [50, 84, 18, 8], to: 'tavern' }, { r: [188, 80, 20, 8], to: 'exhouse' }, { r: [46, 222, 20, 8], to: 'home' }, { r: [206, 228, 30, 8], to: 'club' }],
     acts: [{ r: [98, 166, 36, 48], l: 'DRIVE', f: () => askDrive() }] },
   home: { img: 'home', name: 'HOME',
-    walk: [[4, 20, 146, 94], [154, 20, 138, 94], [4, 134, 176, 110], [184, 134, 108, 110], [88, 106, 16, 32], [146, 70, 12, 18], [176, 190, 12, 22], [58, 240, 26, 8]],
+    walk: [[4, 24, 146, 90], [154, 20, 138, 94], [4, 134, 176, 110], [184, 134, 108, 110], [88, 106, 16, 32], [146, 92, 12, 18], [176, 190, 12, 22], [58, 240, 26, 8]],
     block: [[12, 24, 48, 58], [64, 22, 14, 21], [160, 24, 28, 61], [210, 22, 20, 22], [256, 20, 16, 26], [14, 136, 72, 32], [26, 186, 48, 17],
       [110, 128, 34, 26], [155, 206, 14, 6], [188, 128, 76, 36], [266, 120, 22, 36], [218, 186, 30, 23], [196, 216, 20, 16]],
     exit: { r: [58, 244, 26, 4], to: 'map' },
     acts: [
       { r: [12, 166, 76, 14], l: 'COUCH', f: () => couch() },
       { r: [186, 162, 34, 12], l: 'WHISKEY', f: () => drink('whiskey') },
-      { r: [262, 154, 30, 10], l: 'FRIDGE', f: () => say(['A lemon, some mustard, and a fridge magnet shaped like a guitar.']) },
+      { r: [262, 154, 30, 10], l: 'FRIDGE', f: () => fridge() },
       { r: [204, 42, 32, 10], l: 'MIRROR', f: () => mirror() },
       { r: [10, 80, 54, 12], l: 'BED', f: () => bed() },
       { r: [144, 134, 32, 10], l: 'CLOSET', f: () => closet() },
@@ -413,8 +490,8 @@ const SC = {
       { r: [118, 226, 60, 18], l: 'LEAVE', f: () => leave() },
       { r: [96, 116, 64, 14], l: 'BARTENDER', f: () => tavernBartender() },
       { r: [242, 108, 44, 14], l: 'JUKEBOX', f: () => jukebox() },
-      { r: [14, 186, 46, 50], l: 'REGULAR', f: () => say([{ who: 'REGULAR', t: "Weren't you at the club last night? You handed their bartender something. Made a whole speech about it." }, L('Rumors in the back rows.')]) },
-      { r: [218, 186, 46, 40], l: 'COWBOY', f: () => say([{ who: 'COWBOY', t: "Drink up, or don't. Either way it's your night, partner." }]) }] },
+      { r: [14, 186, 46, 50], l: 'REGULAR', f: () => say([{ who: 'REGULAR', t: st.buzz >= 3 ? "You're telling me this story again? You handed the club bartender something last night. Made a whole speech about it." : "Weren't you at the club last night? You handed their bartender something. Made a whole speech about it." }, L('Rumors in the back rows.')]) },
+      { r: [218, 186, 46, 40], l: 'COWBOY', f: () => say([{ who: 'COWBOY', t: st.buzz >= 3 ? "Partner, you're swaying like a screen door in a storm. Sit a spell." : "Drink up, or don't. Either way it's your night, partner." }]) }] },
   club: { img: 'club', name: 'THE CLUB', walk: [[0, 100, 296, 148], [30, 98, 236, 4]],
     block: [[4, 176, 104, 72], [250, 232, 16, 8], [34, 145, 12, 6], [64, 135, 12, 6], [98, 147, 12, 6], [174, 141, 12, 6], [208, 151, 12, 6], [242, 137, 12, 6], [228, 181, 12, 6]],
     exit: { r: [284, 196, 12, 40], to: 'map' },
@@ -437,7 +514,8 @@ const CUPS = { home: [[100, 214], [118, 198], [142, 232], [110, 98]] };
 const CUP_MSG = ['This is empty. Like your soul. Check the kitchen.', 'This cup is about as substantive as your purpose.'];
 function cupActs() {
   return (CUPS[st.scene] || []).map((c, i) => (st.cups && st.cups[st.scene + i]) ? null :
-    { r: [c[0] - 11, c[1] - 8, 22, 20], l: 'CUP', f: () => { st.cups[st.scene + i] = true; sfx('click'); say([CUP_MSG[st.cupN++ % 2]]); } }).filter(Boolean);
+    { r: [c[0] - 11, c[1] - 8, 22, 20], l: 'CUP', f: () => { st.cups[st.scene + i] = true; sfx('click'); st.cupN++;
+      say([st.cupN >= CUPS.home.length ? 'Four empty cups. You\'ve been busy. The answer isn\'t at the bottom of any of them.' : CUP_MSG[(st.cupN - 1) % 2]]); } }).filter(Boolean);
 }
 function drawCup(x, y) {
   ctx.fillStyle = OUT; ctx.fillRect(x - 4, y - 4, 9, 6);
@@ -463,31 +541,36 @@ function hud() {
 }
 
 // ===== dialog =====
-let dq = [], dDone = null, dChoice = null;
+let dq = [], dDone = null, dChoice = null, dChoiceAt = 0;
 function say(lines, done) { dq = lines.slice(); dDone = done || null; st.lock = true; nextLine(); }
 function nextLine() {
   const d = $('dlg');
   if (!dq.length) { d.style.display = 'none'; st.lock = false; dChoice = null; const f = dDone; dDone = null; if (f) f(); return; }
   let L = dq.shift(); if (typeof L === 'string') L = { t: L };
   d.innerHTML = (L.who ? '<div class="who">' + L.who + '</div>' : '') + '<div' + (L.ly ? ' class="ly"' : '') + '>' + L.t + '</div>' + (L.ly ? '<div class="attr">' + ATTR + '</div>' : '');
+  if (L.ly) addJournal(L.raw);
   if (L.fx) L.fx();
   dChoice = L.ch || null;
+  d.classList.toggle('top', st.mode === 'drive');
   if (dChoice) {
-    const c = document.createElement('div'); c.className = 'choices';
+    // nothing is pre-selected: one stray SPACE or A press can't pick an answer for you
+    const c = document.createElement('div'); c.className = 'choices'; dChoiceAt = performance.now();
     dChoice.forEach((o, i) => { const b = document.createElement('button'); b.className = 'btn' + (o[2] === 'pink' ? ' pink' : i === 0 ? ' hot' : ''); b.textContent = o[0];
-      b.onclick = e => { e.stopPropagation(); d.style.display = 'none'; const pending = dDone; dq = []; dDone = null; st.lock = false; dChoice = null; if (pending) pending(); o[1](); }; c.appendChild(b); });
-    d.appendChild(c); setTimeout(() => c.firstChild && c.firstChild.focus(), 30);
-  } else d.insertAdjacentHTML('beforeend', '<div class="more">SPACE &#9660;</div>');
+      b.onclick = e => { e.stopPropagation(); if (e.detail === 0 && performance.now() - dChoiceAt < 350) return;
+        d.style.display = 'none'; const pending = dDone; dq = []; dDone = null; st.lock = false; dChoice = null; if (pending) pending(); o[1](); }; c.appendChild(b); });
+    d.appendChild(c);
+  } else d.insertAdjacentHTML('beforeend', '<div class="more">' + CTL().more + ' &#9660;</div>');
   d.style.display = 'block';
 }
 $('dlg').addEventListener('click', () => { if (!dChoice) nextLine(); });
 function fade(text, ms, mid, ly) {
   const f = $('fade'); f.innerHTML = esc(text || '') + (ly ? '<span class="fly">"' + esc(ly) + '"</span><span class="fattr">' + ATTR + '</span>' : ''); f.style.opacity = 1; st.lock = true;
+  if (ly) addJournal(ly);
   setTimeout(() => { if (mid) mid(); setTimeout(() => { f.style.opacity = 0; st.lock = false; }, ms || 900); }, 650);
 }
 
 // ===== actions =====
-function go(scene, x, y) { st.scene = scene; st.x = x; st.y = y; st.dir = 'down'; if (scene !== 'club') st.watched = false; hud(); }
+function go(scene, x, y) { st.scene = scene; st.x = x; st.y = y; st.dir = 'down'; if (scene !== 'club') st.watched = false; hud(); saveRun(); }
 function enter(to) {
   if (to === 'club' && st.courage < 2) { st.y += 10; return say([{ who: 'BOUNCER', t: 'Not tonight, pal.' }, '(You need 2 Courage to get past the bouncer.)']); }
   st.buzz = Math.max(0, st.buzz - 1);
@@ -504,11 +587,17 @@ function drink(kind) {
   say([msg + ' +1 Courage, +' + (strong ? 2 : 1) + ' Buzz.'], () => { if (st.buzz >= 5) blackout(); });
 }
 function couch() {
-  say([L("You said you never really left the couch baby."), { t: 'Sleep it off? The night starts over: Courage and Buzz back to 0.', ch: [['SLEEP', () => fade('ZZZ...', 900, () => { st.courage = 0; st.buzz = 0; st.porchOff = false; st.knocks = 0; go('home', 50, 178); })], ['NOT YET', () => {}]] }]);
+  say([L("And as the line's going dead you said you never really left the couch baby."), { t: 'Sleep it off? The night starts over: Courage and Buzz back to 0.', ch: [['SLEEP', () => fade('ZZZ...', 900, () => { st.courage = 0; st.buzz = 0; st.porchOff = false; st.knocks = 0; st.water = false; go('home', 50, 178); })], ['NOT YET', () => {}]] }]);
 }
 function mirror() {
   const m = ['You look tired. And painfully sober.', 'A little flushed. Still you.', 'A little flushed. Still you.', 'Who is that guy?', 'There are two of you. Neither one looks good.', ''];
   say(st.buzz >= 4 ? [m[st.buzz], L('Faces in the shrouds.')] : [m[st.buzz]]);
+}
+function fridge() {
+  if (st.water) return say(['Just the lemon and the mustard now.']);
+  if (st.buzz === 0) return say(['A lemon, some mustard, a fridge magnet shaped like a guitar, and one bottle of water. Save it for later.']);
+  st.water = true; st.buzz = Math.max(0, st.buzz - 1); hud(); sfx('drink');
+  say(['A lemon, some mustard, and one cold bottle of water. You drink the whole thing. -1 Buzz.', '(One water per night. Sleeping it off restocks the fridge.)']);
 }
 function bed() {
   if (st.buzz > 2) return say(["You can't make it into bed like this. The couch is calling."]);
@@ -518,18 +607,19 @@ function closet() {
   st.closetTried = true;
   if (!st.key) return say(['The closet is padlocked.', 'Where did you leave that key?']);
   if (st.buzz > 2) return say(["You have the key, but you can't get it in the lock. Your hands won't stop shaking.", '(Your Buzz is ' + st.buzz + '. It has to be 2 or less. Every trip to another place lowers it by 1, so take a walk around the block. Sleeping on the couch also works, and you keep the key.)']);
-  say(['The padlock clicks open. On the shelf: a cardboard box. Your handwriting on the side.', L('Cut in the dark. The ones we let drown and the others in the ark.')], () => openSpell());
+  say(['The padlock clicks open. On the shelf: a cardboard box. Your handwriting on the side.', L('Cut in the dark. The ones we let drown and the others in the ark.'), 'Shadows pour out of the box. A question hangs in the air: WHAT TO DO WITH THESE SHADOWS?'], () => openSpell());
 }
 let bartTalk = false;
 function tavernBartender() {
-  say([{ who: 'BARTENDER', t: 'What can I get you?', ch: [['A DRINK', () => drink('tavern')], ['TALK', () => {
+  say([{ who: 'BARTENDER', t: st.buzz >= 3 ? 'Easy there. What can I get you?' : 'What can I get you?', ch: [['A DRINK', () => drink('tavern')], ['TALK', () => {
     if (st.courage < 1) return say(["You can't find the words.", '(Talking takes 1 Courage.)']);
     say([{ who: 'BARTENDER', t: "Rough night? I've seen you like this before." }, { who: 'BARTENDER', t: 'Everybody keeps a box they never open. Maybe it\'s time you opened yours.' }, Object.assign(ASK('Like the song on the jukebox says, it\'s all in the words.'), { who: 'BARTENDER' })]);
   }], ['NOTHING', () => {}]] }]);
 }
 function jukebox() {
-  playJukebox();
-  say(['The jukebox kicks in. It\'s "Drunk" by Eli Lie.', L('Ah oooooo, love me lordy like you used to wanna.'), { t: 'The whole bar sways a little.', ch: [['LISTEN FOR CLUES', () => openListen()], ['JUST VIBE', () => {}]] }]);
+  const real = playJukebox();
+  say([real ? 'The jukebox kicks in. It\'s "Drunk" by Eli Lie. The real one, with words.' : 'The jukebox kicks in. It\'s "Drunk" by Eli Lie.', L('Ah oooooo, love me lordy like you used to wanna.'),
+    { t: real ? 'It cuts out right before the bridge. Somebody unplugged it. Hear the rest?' : 'The whole bar sways a little.', ch: [['HEAR THE REST: LISTEN', () => openListen('jukebox'), 'pink'], ['JUST VIBE', () => {}]] }]);
 }
 function band() {
   const lines = [];
@@ -537,7 +627,9 @@ function band() {
   else lines.push('The band is still going.');
   lines.push(L('Ah oooooo, love me lordy like you used to wanna.'), L('Ah oooooo, love me love me like you were my mama.'));
   lines.push({ who: 'ELI LIE, ON STAGE', t: 'Psst... the secrets are in the lyrics.' });
-  lines.push({ t: 'He tips his sunglasses down and winks at nobody in particular.', ch: [['LISTEN FOR CLUES', () => openListen()], ['KEEP WATCHING', () => {}]] });
+  lines.push('The band cuts out right before the bridge. The room goes quiet.');
+  lines.push({ who: 'ELI LIE, ON STAGE', t: 'You know how it goes. Or you should.' });
+  lines.push({ t: 'He tips his sunglasses down and winks at nobody in particular.', ch: [['LISTEN FOR CLUES', () => openListen('band'), 'pink'], ['KEEP WATCHING', () => {}]] });
   say(lines);
 }
 function clubBartender() {
@@ -559,13 +651,14 @@ function knock() {
     { t: "The porch light clicks off. That's your answer. -1 Courage.", fx: () => { st.porchOff = true; sfx('click'); } }]);
 }
 function police() {
-  sfx('knock'); st.mode = 'police'; st.pol = { t: 0, done: false };
+  sfx('knock'); st.mode = 'police'; st.pol = { t: 0, done: false }; st.cops = (st.cops || 0) + 1;
   setTimeout(() => sfx('siren'), 900);
 }
 function updatePolice(dt) {
   const p = st.pol; p.t += dt;
   if (p.t > 5 && !p.done) { p.done = true;
-    fade('BLACKOUT.', 2200, () => { st.mode = 'play'; st.courage = 0; st.buzz = 1; st.porchOff = false; st.knocks = 0; go('home', 50, 178);
+    if (st.cops >= 2) return endGame('cops');
+    fade('BLACKOUT.', 2200, () => { st.mode = 'play'; st.courage = 0; st.buzz = 1; st.porchOff = false; st.knocks = 0; st.water = false; go('home', 50, 178);
       setTimeout(() => say(["You wake up on the couch. You don't remember the ride home, or who gave it to you.", 'All your Courage is gone.',
         ASK('Maybe the song knows a better way to say goodbye.')]), 1500); }, 'The pearly gates indeed.'); }
 }
@@ -573,7 +666,7 @@ const copCar = [0, 1].map(ph => { const c = carCanvas('#f4f0e6'), x = c.getConte
   x.fillStyle = '#16161c'; x.fillRect(2, 3, 18, 5); x.fillRect(2, 27, 18, 7); x.fillStyle = '#8ac8e8'; x.fillRect(4, 8, 14, 6);
   x.fillStyle = ph ? '#ff3040' : '#3060ff'; x.fillRect(4, 16, 7, 3); x.fillStyle = ph ? '#3060ff' : '#ff3040'; x.fillRect(11, 16, 7, 3); return c; });
 function drawPolice() {
-  const p = st.pol, ph = Math.floor(p.t * 6) % 2;
+  const p = st.pol, ph = Math.floor(p.t * 2) % 2; // 2 swaps a second: under the 3-flash safety limit
   ctx.drawImage(IMG.exhouse_off, 0, 0);
   const s = sprite('up', 0);
   ctx.fillStyle = 'rgba(0,0,0,.4)'; ctx.beginPath(); ctx.ellipse(st.x, st.y - 1, 7, 2, 0, 0, 7); ctx.fill();
@@ -583,8 +676,8 @@ function drawPolice() {
     ctx.save(); ctx.translate(cx, 222); ctx.rotate(Math.PI / 2); ctx.drawImage(copCar[ph], -11, -18); ctx.restore();
     if (p.t > 1.8) {
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
-      const g = ctx.createRadialGradient(ph ? 60 : 236, 140, 10, ph ? 60 : 236, 140, 200);
-      g.addColorStop(0, ph ? 'rgba(255,40,60,.55)' : 'rgba(40,80,255,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      const gx = comfort ? 148 : ph ? 40 : 256, g = ctx.createRadialGradient(gx, 140, 10, gx, 140, comfort ? 220 : 170);
+      g.addColorStop(0, comfort ? 'rgba(130,60,200,.28)' : ph ? 'rgba(255,40,60,.3)' : 'rgba(40,80,255,.3)'); g.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.restore();
       ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = 'rgba(10,8,18,.85)'; ctx.fillRect(0, 0, W, 16); ctx.fillStyle = ph ? '#ff6a7a' : '#7a9aff'; ctx.font = '6px "Press Start 2P"';
       ctx.fillText('SOMEBODY CALLED THE POLICE.', 66, 11);
@@ -608,7 +701,7 @@ function blackout() {
   }, 'The pearly gates indeed.');
 }
 function wakeCouch(msg) {
-  st.mode = 'play'; st.courage = 0; st.buzz = 1; st.porchOff = false; st.knocks = 0;
+  st.mode = 'play'; st.courage = 0; st.buzz = 1; st.porchOff = false; st.knocks = 0; st.water = false;
   fade('', 900, () => { go('home', 50, 178); setTimeout(() => say(msg), 1500); });
 }
 
@@ -626,9 +719,9 @@ function startDrive(dest, forced, opening) {
   st.mode = 'drive'; st.lock = false;
   st.drive = { t: 0, dur: 10, x: 148, dest, forced, opening, obs: [], next: .6, scroll: 0, crashed: false, trees: [[10, 20], [250, 80], [20, 150], [262, 200], [4, 230], [256, 0]] };
   if (!grassC) grassC = makeGrass(); hud();
-  if (opening) say([L("It's tunnel vision for me."), 'LEFT and RIGHT to steer (or A and D). Make it home in 10 seconds.']);
-  else if (forced) say(['You blink. You\'re behind the wheel. How did you get here?', 'Survive 10 seconds. LEFT and RIGHT to steer.']);
-  else say(['LEFT and RIGHT to steer. Make it 10 seconds.' + (st.buzz >= 3 ? ' Good luck with that.' : '')]);
+  if (opening) say([L("It's tunnel vision for me."), CTL().steer + ' Make it home in 10 seconds.']);
+  else if (forced) say(['You blink. You\'re behind the wheel. How did you get here?', 'Survive 10 seconds. ' + CTL().steer]);
+  else say([CTL().steer + ' Make it 10 seconds.' + (st.buzz >= 3 ? ' Good luck with that.' : '')]);
 }
 function updateDrive(dt) {
   const d = st.drive; if (st.lock || d.crashed) return;
@@ -647,14 +740,14 @@ function updateDrive(dt) {
   for (const o of d.obs) {
     const ow = o.k === 'cone' ? 8 : 18, oh = o.k === 'cone' ? 10 : 32;
     if (cx < o.x + ow - 2 && cx + 18 > o.x + 2 && cy < o.y + oh - 2 && cy + 32 > o.y + 2) { d.crashed = true; sfx('crash');
-      const how = ASK('Arrow keys or WASD to move. SPACE to interact. Stuck? The answers are in the song.');
+      const how = ASK(CTL().move + ' ' + CTL().act + ' to interact. Stuck? The answers are in the song.');
       const couchLy = L("And as the line's going dead you said you never really left the couch baby.");
       return fade('CRASH.', 2000, () => wakeCouch(d.opening ? [couchLy, 'You wake up on the couch. You don\'t remember the rest of the drive.', 'Somewhere in this mess is the purpose of life. Probably not in the sink.', how]
         : [couchLy, 'You wake up on the couch with a headache and no memory of the drive.', 'All your Courage is gone. The car somehow made it home without you.', ASK('The song saw this coming.')]), 'The soothing poem that wraps my car around convenient tree.'); }
   }
   if (d.t >= d.dur) { st.mode = 'play'; const p = MAPSPAWN[d.dest];
     fade('', 300, () => { go('map', p[0], p[1]); if (d.forced) st.buzz = 3; hud();
-      say(d.opening ? ['You made it home. Somehow. The front door is right there.', 'Somewhere in this mess is the purpose of life. Probably not in the sink.', ASK('Arrow keys or WASD to move. SPACE to interact. Stuck? The answers are in the song.')] : ['You made it. Somehow.']); }); }
+      say(d.opening ? ['You made it home. Somehow. The front door is right there.', 'Somewhere in this mess is the purpose of life. Probably not in the sink.', ASK(CTL().move + ' ' + CTL().act + ' to interact. Stuck? The answers are in the song.')] : ['You made it. Somehow.']); }); }
 }
 function drawDrive() {
   const d = st.drive;
@@ -671,8 +764,8 @@ function drawDrive() {
       ctx.fillStyle = '#f4f0e6'; ctx.fillRect(o.x + 2, o.y + 4, 4, 1); ctx.fillStyle = '#3a3a44'; ctx.fillRect(o.x, o.y + 8, 8, 2); }
     else { ctx.save(); ctx.translate(o.x + 11, o.y + 18); ctx.rotate(Math.PI); ctx.drawImage(car.them, -11, -18); ctx.restore(); }
   });
-  const drawMe = (ox, a) => { ctx.save(); ctx.globalAlpha = a; ctx.translate(d.x + ox, 202); ctx.rotate((d.steer || 0) * .18 + (st.buzz >= 3 ? Math.sin(d.t * 3) * .12 : 0)); ctx.drawImage(car.me, -11, -18); ctx.restore(); };
-  if (st.buzz >= 3) { drawMe(-12, .3); drawMe(12, .3); }
+  const drawMe = (ox, a) => { ctx.save(); ctx.globalAlpha = a; ctx.translate(d.x + ox, 202); ctx.rotate((d.steer || 0) * .18 + (st.buzz >= 3 && !comfort ? Math.sin(d.t * 3) * .12 : 0)); ctx.drawImage(car.me, -11, -18); ctx.restore(); };
+  if (st.buzz >= 3 && !comfort) { drawMe(-12, .3); drawMe(12, .3); }
   drawMe(0, 1);
   ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = '#8a90d8'; ctx.fillRect(0, 0, W, H); ctx.restore();
   const g = ctx.createRadialGradient(d.x, 150, 4, d.x, 150, 60); g.addColorStop(0, 'rgba(255,240,180,.35)'); g.addColorStop(1, 'rgba(255,240,180,0)');
@@ -778,11 +871,12 @@ function updateFlow(dt) {
   const f = st.flow; f.t += dt;
   if (f.t > 6.5 && !f.done) { f.done = true;
     fade('You drift off mid-song.', 1500, () => { st.mode = 'play'; st.buzz = Math.max(0, st.buzz - 2); go('home', 92, 96);
-      setTimeout(() => say(['You wake up in your bed. The guitar is back on its stand.', "You wrote something incredible last night. You can't remember a single note.",
-        ASK('Maybe the song you were chasing already exists.')]), 1500); }); }
+      const scrap = LYRIC_POOL.find(l => !st.journal.includes(l));
+      setTimeout(() => say(['You wake up in your bed. The guitar is back on its stand.', "You wrote something incredible last night. You can't remember a single note."]
+        .concat(scrap ? ['On the nightstand, a napkin in your own handwriting:', L(scrap)] : [], [ASK('Maybe the song you were chasing already exists.')])), 1500); }); }
 }
 function drawFlow() {
-  const t = st.flow.t, cx = W / 2 + Math.sin(t * 1.3) * 14, cy = VH / 2 + Math.cos(t * 1.1) * 8, cols = ['#ff6a9a', '#ffc24a', '#4fc3c8', '#8a6ad0', '#f2ead8'];
+  const t = st.flow.t * (comfort ? .35 : 1), cx = W / 2 + (comfort ? 0 : Math.sin(t * 1.3) * 14), cy = VH / 2 + (comfort ? 0 : Math.cos(t * 1.1) * 8), cols = ['#ff6a9a', '#ffc24a', '#4fc3c8', '#8a6ad0', '#f2ead8'];
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#07040f'; ctx.fillRect(0, 0, W, VH);
   for (let i = 0; i < 16; i++) { const r = (t * 52 + i * 15) % 240; if (r < 2) continue;
     ctx.strokeStyle = cols[(i + Math.floor(t * 3)) % cols.length]; ctx.lineWidth = Math.max(1, Math.round(r / 36)); ctx.globalAlpha = Math.min(1, r / 50);
@@ -790,8 +884,8 @@ function drawFlow() {
   ctx.globalAlpha = 1;
   for (let i = 0; i < 48; i++) { const a = i * 2.4 + t * .7, d = (t * 95 + i * 37) % 210, big = d > 120 ? 2 : 1;
     ctx.fillStyle = cols[i % 5]; ctx.fillRect(Math.round(cx + Math.cos(a) * d), Math.round(cy + Math.sin(a) * d * .7), big, big); }
-  const sc = Math.max(.25, 1.6 - t / 4.5);
-  ctx.save(); ctx.translate(Math.round(cx), Math.round(cy)); ctx.rotate(t * 1.4); ctx.scale(sc, sc);
+  const sc = Math.max(.25, 1.6 - st.flow.t / 4.5);
+  ctx.save(); ctx.translate(Math.round(cx), Math.round(cy)); ctx.rotate(comfort ? 0 : t * 1.4); ctx.scale(sc, sc);
   ctx.drawImage(sprite('down', 0), -9, -14);
   ctx.fillStyle = '#c8843a'; ctx.fillRect(-2, 0, 8, 6); ctx.fillStyle = '#6b4226'; ctx.fillRect(4, 1, 9, 2); ctx.restore();
   ctx.fillStyle = 'rgba(10,8,18,.85)'; ctx.fillRect(0, 0, W, 16); ctx.fillStyle = cols[Math.floor(t * 4) % 5]; ctx.font = '6px "Press Start 2P"';
@@ -801,11 +895,12 @@ function drawFlow() {
 // ===== main loop =====
 const keys = {};
 function update(dt) {
-  if (['listen', 'help', 'spell', 'final'].some(id => $(id).style.display === 'flex')) return;
+  if (['listen', 'help', 'spell', 'final', 'journal'].some(id => $(id).style.display === 'flex')) return;
   st.t += dt;
-  if (['play', 'drive', 'curb', 'police', 'flow'].includes(st.mode)) {
+  if (['play', 'drive', 'curb', 'police', 'flow'].includes(st.mode) && !st.lock) { // reading never costs time
     const before = Math.floor(st.played); st.played += dt;
-    if (Math.floor(st.played) !== before) hud();
+    if (Math.floor(st.played) !== before) { hud(); if (st.mode === 'play' && Math.floor(st.played) % 4 === 0) saveRun(); }
+    if (!st.warned && GAME_SECONDS - st.played <= 60) { st.warned = true; banner('1:00 LEFT UNTIL LAST CALL.'); }
     if (st.played >= GAME_SECONDS) return endGame('time');
   }
   if (st.mode === 'drive') return updateDrive(dt);
@@ -813,7 +908,9 @@ function update(dt) {
   if (st.mode === 'police') return updatePolice(dt);
   if (st.mode === 'flow') return updateFlow(dt);
   if (st.mode === 'play' && !st.lock) { st.nudgeT = (st.nudgeT || 0) + dt; if (st.nudgeT > 150) { st.nudgeT = 0; nudge(); } }
-  if (st.mode !== 'play' || st.lock) { st.near = null; $('hint').style.display = 'none'; return; }
+  if (st.mode !== 'play' || st.lock) { st.near = null; $('hint').style.display = 'none';
+    if (st.mode !== 'play' && idleKey !== st.mode) { idleKey = st.mode; $('idleLoc').textContent = st.mode === 'drive' ? 'ON THE ROAD' : (SC[st.scene] || {}).name || ''; $('idleTxt').textContent = st.mode === 'drive' ? CTL().steer + ' Dodge the cones and the cars.' : '...'; }
+    return; }
   let dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
   if (st.buzz >= 3 && (dx || dy)) { dx += Math.sin(st.t * 2.3) * .35 * (st.buzz - 2); dy += Math.cos(st.t * 1.7) * .25 * (st.buzz - 2); }
   const sp = 62 * dt, moving = dx || dy;
@@ -827,9 +924,12 @@ function update(dt) {
   if (s.doors) for (const d of s.doors) if (inR(st.x, st.y, d.r)) return enter(d.to);
   if (s.exit && inR(st.x, st.y, s.exit.r)) return leave();
   st.near = (s.acts || []).concat(cupActs()).find(a => inR(st.x, st.y, a.r)) || null;
-  const h = $('hint');
-  if (st.near) { h.textContent = (document.body.classList.contains('phone') ? 'A' : 'SPACE') + ': ' + st.near.l; h.style.display = 'block'; } else h.style.display = 'none';
+  const h = $('hint'), lbl = st.near ? st.near.l : '';
+  if (st.near) { h.textContent = CTL().act + ': ' + lbl; h.style.display = 'block'; } else h.style.display = 'none';
+  if (idleKey !== st.scene + lbl) { idleKey = st.scene + lbl; $('idleLoc').textContent = (SC[st.scene] || {}).name || '';
+    $('idleTxt').innerHTML = lbl ? '<b>A</b> ' + esc(lbl) : st.scene === 'map' ? 'Walk into a doorway to go inside. The car is parked out front.' : 'Walk up to things and press A.'; }
 }
+let idleKey = '';
 function draw() {
   ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
   if (st.mode === 'drive') { CY = camTo(202 - VH * .72, 'drive'); ctx.setTransform(1, 0, 0, 1, 0, -CY); return drawDrive(); }
@@ -838,7 +938,7 @@ function draw() {
   if (st.mode === 'flow') return drawFlow();
   if (st.mode !== 'play') return;
   CY = camTo(st.y - 16 - VH / 2, 'play' + st.scene, (IMG[SC[st.scene].img] || {}).naturalHeight || H);
-  const sway = st.buzz >= 3 ? Math.sin(st.t * 1.3) * (st.buzz - 2) * 1.5 : 0;
+  const sway = st.buzz >= 3 && !comfort ? Math.sin(st.t * 1.3) * (st.buzz - 2) * 1.5 : 0;
   const scene = () => {
     ctx.drawImage(st.scene === 'exhouse' && st.porchOff ? IMG.exhouse_off : IMG[SC[st.scene].img], 0, 0);
     if (st.scene === 'map') drawMapFx();
@@ -860,7 +960,7 @@ function draw() {
       ctx.fillStyle = '#ffc24a'; ctx.fillRect(bx, by, 6, 9); ctx.fillStyle = OUT; ctx.fillRect(bx + 2, by + 1, 2, 4); ctx.fillRect(bx + 2, by + 6, 2, 2); }
   };
   ctx.setTransform(1, 0, 0, 1, Math.round(sway), -CY); scene();
-  if (st.buzz >= 4) { ctx.globalAlpha = .3; ctx.setTransform(1, 0, 0, 1, Math.round(sway + 5 + Math.sin(st.t * 2) * 3), 1 - CY); scene(); ctx.globalAlpha = 1; }
+  if (st.buzz >= 4 && !comfort) { ctx.globalAlpha = .3; ctx.setTransform(1, 0, 0, 1, Math.round(sway + 5 + Math.sin(st.t * 2) * 3), 1 - CY); scene(); ctx.globalAlpha = 1; }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 let last = performance.now();
@@ -872,16 +972,27 @@ function act() {
   if ($('dlg').style.display === 'block') { if (!dChoice) nextLine(); return; }
   if (st.mode === 'play' && !st.lock && st.near) st.near.f();
 }
-const OVS = ['title', 'creator', 'listen', 'spell', 'final', 'help'];
+const OVS = ['title', 'creator', 'listen', 'spell', 'final', 'help', 'journal'];
 const ovOpen = () => OVS.some(id => $(id).style.display === 'flex');
 addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT') return;
+  if (e.target.tagName === 'INPUT') { if (e.code === 'Escape' && $('spell').style.display === 'flex') stepAway(); return; }
+  const dl = $('dlg'), chB = (dChoice && dl.style.display === 'block' && !ovOpen()) ? [...dl.querySelectorAll('.choices button')] : null;
+  if (chB && chB.length) { // choices: arrows move, SPACE picks; the first SPACE only highlights
+    const i = chB.indexOf(document.activeElement), back = e.code === 'ArrowLeft' || e.code === 'ArrowUp';
+    if (/^Arrow/.test(e.code)) { e.preventDefault(); chB[i < 0 ? (back ? chB.length - 1 : 0) : (i + (back ? -1 : 1) + chB.length) % chB.length].focus(); return; }
+    if ((e.code === 'Space' || e.code === 'Enter' || e.code === 'KeyE') && i < 0) { e.preventDefault(); chB[0].focus(); return; }
+  }
+  if (!ovOpen() && !e.repeat && ['play', 'drive', 'curb', 'police', 'flow'].includes(st.mode)) {
+    if (e.code === 'KeyL') { e.preventDefault(); return openListen('key'); }
+    if (e.code === 'KeyH') { e.preventDefault(); return hint(); }
+    if (e.code === 'KeyJ') { e.preventDefault(); return openJournal(); }
+  }
   if (KM[e.code]) { keys[KM[e.code]] = true; e.preventDefault(); }
   if (e.code === 'Space' || e.code === 'Enter' || e.code === 'KeyE') {
     if ((dChoice && $('dlg').contains(e.target)) || ovOpen()) return;
     e.preventDefault(); act();
   }
-  if (e.code === 'Escape') { closeOv('listen'); closeOv('help'); }
+  if (e.code === 'Escape') { if ($('listen').style.display === 'flex') return closeOv('listen'); closeOv('help'); closeOv('journal'); if ($('spell').style.display === 'flex') stepAway(); }
 });
 addEventListener('keyup', e => { if (KM[e.code]) keys[KM[e.code]] = false; });
 // touch stick + A button
@@ -903,7 +1014,9 @@ aBtn.addEventListener('pointerdown', e => { e.preventDefault(); aBtn.classList.a
   const sp = $('spell').style.display === 'flex'; if (sp) return cast();
   if ($('listen').style.display === 'flex') return closeOv('listen');
   if ($('help').style.display === 'flex') return closeOv('help');
-  const c = $('dlg').querySelector('.choices button'); if ($('dlg').style.display === 'block' && dChoice && c) return (document.activeElement && $('dlg').contains(document.activeElement) ? document.activeElement : c).click();
+  if ($('journal').style.display === 'flex') return closeOv('journal');
+  const c = $('dlg').querySelector('.choices button');
+  if ($('dlg').style.display === 'block' && dChoice && c) { const f = document.activeElement; return $('dlg').contains(f) && f.tagName === 'BUTTON' ? f.click() : c.focus(); }
   act(); });
 ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => aBtn.addEventListener(ev, () => aBtn.classList.remove('down')));
 document.addEventListener('contextmenu', e => { if (e.target.closest && e.target.closest('.pad')) e.preventDefault(); });
@@ -915,26 +1028,65 @@ function nudge() {
   const b = $('listenBtn'), tt = $('toast'); b.classList.remove('pulse'); void b.offsetWidth; b.classList.add('pulse');
   tt.style.display = 'block'; clearTimeout(nudge.t); nudge.t = setTimeout(() => { tt.style.display = 'none'; b.classList.remove('pulse'); }, 6000);
 }
-$('toast').onclick = e => { e.currentTarget.style.display = 'none'; e.currentTarget.blur(); openListen(); };
-function openListen() {
+$('toast').onclick = e => { e.currentTarget.style.display = 'none'; e.currentTarget.blur(); openListen('toast'); };
+function withUtm(u, where, yt) {
+  let out = u + (u.includes('?') ? '&' : '?') + UTM + '&utm_content=' + encodeURIComponent(where || 'button');
+  if (yt && BRIDGE.seconds && where === 'bridge') out += '&t=' + BRIDGE.seconds;
+  return out;
+}
+function openListen(where) {
+  if (typeof where !== 'string') where = 'button';
   $('toast').style.display = 'none';
-  $('plats').innerHTML = LINKS.map(l => l[1] ? '<a class="plat" href="' + l[1] + '" target="_blank" rel="noopener">' + l[0] + '<span>Open</span></a>'
-    : '<div class="plat" aria-disabled="true">' + l[0] + '<span>Link coming soon</span></div>').join('');
+  const live = LINKS.filter(l => l[1]);
+  $('plats').innerHTML = live.length ? live.map(l => '<a class="plat" href="' + esc(withUtm(l[1], where, /youtu/i.test(l[1]))) + '" target="_blank" rel="noopener">' + l[0] + '<span>Open</span></a>').join('')
+    : '<div class="lnote" style="padding:10px;border:2px dashed var(--line)">Streaming links drop soon. Until then, the answer is still in the song.</div>';
+  $('plats').querySelectorAll('a').forEach(a => a.addEventListener('click', leaveForSong));
+  const lb = $('lBridge'); lb.style.display = BRIDGE.label ? '' : 'none'; if (BRIDGE.label) lb.innerHTML = 'The spell is sung in the bridge, around <b>' + esc(BRIDGE.label) + '</b>.';
   openOv('listen'); $('lClose').focus();
 }
-$('listenBtn').onclick = e => { e.currentTarget.blur(); openListen(); };
+// leaving for the real song: pause the 8-bit track so it never plays over Eli, and reward the trip
+function leaveForSong() { st.outAt = Date.now(); holdAudio(true); }
+function holdAudio(off) {
+  if (off) { if (bgEl) bgEl.pause(); if (pvEl) pvEl.pause(); if (AC && AC.state === 'running') AC.suspend().catch(() => {}); return; }
+  if (!musicOn) return; if (AC) AC.resume().catch(() => {}); if (bgEl) bgEl.play().catch(() => {});
+}
+function welcomeBack() {
+  if (!st.outAt) return; const away = Date.now() - st.outAt; st.outAt = 0;
+  if (away < 30000 || !['play', 'drive'].includes(st.mode) || (st.backs || 0) >= 3) return;
+  st.backs = (st.backs || 0) + 1; st.courage = Math.min(5, st.courage + 1); hud(); sfx('key');
+  banner('WELCOME BACK. YOU HEARD SOMETHING. +1 COURAGE.');
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) { saveRun(); holdAudio(true); } else { holdAudio(false); welcomeBack(); } });
+addEventListener('pagehide', saveRun);
+addEventListener('focus', () => { if (st.outAt) { holdAudio(false); welcomeBack(); } });
+function banner(msg) { const b = $('banner'); b.textContent = msg; b.style.display = 'block'; clearTimeout(banner.t); banner.t = setTimeout(() => { b.style.display = 'none'; }, 4200); }
+function addJournal(raw) {
+  const k = raw.replace(/^"|"$/g, '');
+  if (!LYRIC_POOL.includes(k) || st.journal.includes(k)) return;
+  st.journal.push(k); const jb = $('journalBtn'); jb.classList.remove('pulse'); void jb.offsetWidth; jb.classList.add('pulse');
+}
+function openJournal() {
+  const n = st.journal.length;
+  $('jCount').textContent = n + ' OF ' + LYRIC_POOL.length + ' LINES FOUND';
+  $('jList').innerHTML = n ? st.journal.map(l => '<li>"' + esc(l) + '"</li>').join('') : '<li style="font-style:normal;color:var(--dim)">Nothing yet. Lyrics you find around town land here.</li>';
+  $('jCups').textContent = 'EMPTY CUPS FOUND: ' + (st.cupN || 0) + ' OF ' + CUPS.home.length;
+  openOv('journal'); $('jClose').focus();
+}
+$('journalBtn').onclick = e => { e.currentTarget.blur(); openJournal(); };
+$('jClose').onclick = () => closeOv('journal'); $('jListen').onclick = () => { closeOv('journal'); openListen('journal'); };
+$('listenBtn').onclick = e => { e.currentTarget.blur(); openListen('button'); };
 $('hintBtn').onclick = e => { e.currentTarget.blur(); hint(); };
 function hint() {
   let msg, toSong = false;
-  if (st.spellSeen) { msg = 'You must listen to the bridge to hear the spell.'; toSong = true; }
+  if (st.spellSeen) { msg = 'You must listen to the bridge to hear the spell.' + (BRIDGE.label ? ' It starts around ' + BRIDGE.label + '.' : ''); toSong = true; }
   else if (st.key) msg = st.buzz > 2 ? 'Check the closet. (Steady hands first: get your Buzz to 2 or less.)' : 'Check the closet.';
   else if (st.closetTried) msg = 'The bartender has the key.';
   else msg = 'Check the closet.';
   sfx('click');
   if ($('spell').style.display === 'flex') { $('spellMsg').textContent = 'HINT: ' + msg; $('spellMsg').style.color = 'var(--amber)'; $('sListen').style.display = 'inline-block'; return; }
   if (st.mode !== 'play' || st.lock || $('dlg').style.display === 'block') return;
-  say([toSong ? { who: 'HINT', t: msg, ch: [['GOT IT', () => {}], ['LISTEN TO THE BRIDGE', () => openListen(), 'pink']] } : { who: 'HINT', t: msg }]);
-} $('tListen').onclick = openListen; $('lClose').onclick = () => closeOv('listen');
+  say([toSong ? { who: 'HINT', t: msg, ch: [['GOT IT', () => {}], ['LISTEN TO THE BRIDGE', () => openListen('bridge'), 'pink']] } : { who: 'HINT', t: msg }]);
+} $('tListen').onclick = () => openListen('title'); $('lClose').onclick = () => closeOv('listen');
 $('howBtn').onclick = () => { openOv('help'); $('helpClose').focus(); }; $('helpClose').onclick = () => closeOv('help');
 
 // spell
@@ -943,44 +1095,63 @@ function lev(a, b) { const d = []; for (let i = 0; i <= a.length; i++) { d[i] = 
   for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
   return d[a.length][b.length]; }
 let tries = 0;
-function openSpell() { st.spellSeen = true; st.lock = true; tries = 0; $('spellIn').value = ''; $('spellMsg').textContent = 'Type the words. Press CAST or Enter.'; $('spellMsg').style.color = '';
-  $('sListen').style.display = 'inline-block'; $('sListen').textContent = 'NEED THE WORDS? LISTEN'; openOv('spell'); setTimeout(() => $('spellIn').focus(), 50); }
+const SPELL_TIP = 'Type the words and press CAST. The 8-bit soundtrack has no words: you need Eli\'s voice, in the bridge.';
+function openSpell() { st.spellSeen = true; st.lock = true; tries = 0; $('spellIn').value = ''; $('spellMsg').textContent = SPELL_TIP; $('spellMsg').style.color = '';
+  $('sListen').style.display = 'inline-block'; $('sListen').textContent = 'NEED THE WORDS? LISTEN'; openOv('spell'); setTimeout(() => { const i = $('spellIn'); i.focus(); if (isPhone()) setTimeout(() => i.scrollIntoView({ block: 'center' }), 350); }, 50); }
 function cast() {
   const v = norm($('spellIn').value);
   if (v && lev(v, SPELL) <= 3) { closeOv('spell'); sfx('win'); endGame('win'); return; }
-  tries++; $('spellMsg').textContent = 'The shadows thicken. (' + tries + (tries === 1 ? ' try)' : ' tries)'); $('spellMsg').style.color = '#ff6a9a';
+  tries++;
+  const d = v ? lev(v, SPELL) : 99, egg = v.length >= 8 && LYRIC_POOL.some(l => { const n = norm(l); return n.includes(v) || lev(v, n) <= 4; });
+  $('spellMsg').textContent = egg ? 'Wrong verse. Right song. (The spell is in the bridge.)'
+    : d <= 6 ? 'So close the shadows flinch. Listen again and check every word.'
+    : 'The shadows thicken. (' + tries + (tries === 1 ? ' try)' : ' tries)');
+  $('spellMsg').style.color = egg || d <= 6 ? 'var(--amber)' : '#ff6a9a';
   $('sListen').style.display = 'inline-block'; $('sListen').textContent = 'THE ANSWER IS IN THE LYRICS';
 }
 $('castBtn').onclick = cast; $('spellIn').addEventListener('keydown', e => { if (e.key === 'Enter') cast(); });
-$('sListen').onclick = openListen; $('sClose').onclick = () => { closeOv('spell'); st.lock = false; };
-$('eListen').onclick = openListen;
-$('againBtn').onclick = () => { closeOv('final'); st.mode = 'title'; st.lock = false; openOv('title'); };
+$('sListen').onclick = () => openListen('spell'); $('sClose').onclick = stepAway;
+function stepAway() { closeOv('spell'); st.lock = false; }
+$('eListen').onclick = () => openListen('final');
+$('againBtn').onclick = () => { closeOv('final'); st.mode = 'title'; st.lock = false; showTitle(); };
 
 
 // ===== the end + share card =====
 const CAP_WIN = 'I won Drunk, by Eli Lie and all I got was this amazing single..';
 const CAP_TIME = 'I survived a night of Drunk, by Eli Lie and all I got was this amazing single..';
+const CAP_COPS = 'I got the cops called on me twice in Drunk, by Eli Lie, and all I got was this amazing single..';
+// named endings: each gets its own line on the result screen and the share picture
+function endingOf(kind) {
+  if (kind === 'win') return st.drinks <= 2 ? { name: 'SOBER WIN', cap: CAP_WIN } : { name: 'SHADOWS BANISHED', cap: CAP_WIN };
+  if (kind === 'cops') return { name: 'COPS CALLED TWICE', cap: CAP_COPS };
+  return { name: 'LAST CALL', cap: CAP_TIME };
+}
 let cardURL = '', cardBlob = null, shareText = '';
 function endGame(kind) {
   if (st.mode === 'over') return;
-  const won = kind === 'win', secs = won ? st.played : GAME_SECONDS;
-  st.mode = 'over'; st.lock = true; dq = []; dChoice = null; dDone = null;
+  const won = kind === 'win', secs = kind === 'time' ? GAME_SECONDS : st.played;
+  st.mode = 'over'; st.lock = true; dq = []; dChoice = null; dDone = null; clearRun();
   ['dlg', 'hint', 'toast'].forEach(id => $(id).style.display = 'none'); closeOv('spell');
   keys.up = keys.down = keys.left = keys.right = false; hud();
-  if (won) buildFinal(true, secs);
-  else { sfx('blackout'); fade('LAST CALL.\n\nThe bar lights come up. The night is over.', 1600, () => buildFinal(false, secs)); }
+  if (won) buildFinal(kind, secs);
+  else if (kind === 'cops') { sfx('blackout'); fade('COPS CALLED TWICE.\n\nThis time nobody drives you home.', 1600, () => buildFinal(kind, secs)); }
+  else { sfx('blackout'); fade('LAST CALL.\n\nThe bar lights come up. The night is over.', 1600, () => buildFinal(kind, secs)); }
 }
-async function buildFinal(won, secs) {
-  $('fTitle').textContent = won ? 'THE SHADOWS LIFT.' : 'LAST CALL.';
+async function buildFinal(kind, secs) {
+  const won = kind === 'win', end = endingOf(kind);
+  $('fEnding').textContent = 'ENDING: ' + end.name;
+  $('fTitle').textContent = won ? 'THE SHADOWS LIFT.' : kind === 'cops' ? 'COPS CALLED TWICE.' : 'LAST CALL.';
   $('fBody').innerHTML = won
     ? '<div style="color:#ffb0c8;font-style:italic">"Clearing of the sky. Color in the clouds."</div><div class="attr">' + ATTR + '</div><div style="margin-top:8px">You put the box back on the shelf with the lid open. The couch is just a couch again.</div>'
-    : '<div>Six minutes is all the night gives you, and the box is still in the closet.</div><div class="tip" style="margin-top:6px">Next time, listen to the song first. The answer is in the lyrics.</div>';
+      + (end.name === 'SOBER WIN' ? '<div class="tip" style="margin-top:6px">' + st.drinks + (st.drinks === 1 ? ' drink' : ' drinks') + '. You did it the hard way.</div>' : '')
+    : kind === 'cops' ? '<div>Her porch light stayed off. The second time, the officers did not give you a ride home. The box is still in the closet.</div><div class="tip" style="margin-top:6px">The answer was never at her door. It\'s in the bridge of the song.</div>'
+    : '<div>Six minutes is all the night gives you, and the box is still in the closet.</div><div class="tip" style="margin-top:6px">The answer was in the bridge. Listen to the song, then try again.</div>';
   $('fTime').textContent = mmss(secs); $('fDrinks').textContent = st.drinks;
-  const cap = won ? CAP_WIN : CAP_TIME;
+  const cap = end.cap;
   shareText = cap + ' Time ' + mmss(secs) + ', ' + st.drinks + (st.drinks === 1 ? ' drink.' : ' drinks.');
   buildShares();
   openOv('final'); $('cardImg').removeAttribute('src');
-  const out = await makeCard(won, secs, cap);
+  const out = await makeCard(won, secs, cap, end.name);
   cardURL = out.url; cardBlob = out.blob; $('cardImg').src = cardURL;
   if (!document.body.classList.contains('phone')) setTimeout(() => $('shareBtn').focus({ preventScroll: true }), 50);
 }
@@ -991,7 +1162,7 @@ function wrap(y, text, x0, y0, maxW, lh) {
   for (const w of words) { const test = line ? line + ' ' + w : w; if (y.measureText(test).width > maxW && line) { y.fillText(line, x0, yy); line = w; yy += lh; } else line = test; }
   if (line) { y.fillText(line, x0, yy); yy += lh; } return yy;
 }
-async function makeCard(won, secs, cap) {
+async function makeCard(won, secs, cap, endName) {
   try { await Promise.race([Promise.all([document.fonts.load('20px "Press Start 2P"'), document.fonts.load('30px VT323')]), new Promise(r => setTimeout(r, 1500))]); } catch (_) {}
   const LW = 216, LH = 288, S = 5, PAD = 9, lo = document.createElement('canvas'); lo.width = LW; lo.height = LH; // 1080 x 1440 (3:4)
   const x = lo.getContext('2d'); x.imageSmoothingEnabled = false;
@@ -1035,15 +1206,18 @@ async function makeCard(won, secs, cap) {
   const T = (s, f, col, a, b) => { y.font = f; y.fillStyle = '#000'; y.fillText(s, a + 4, b + 4); y.fillStyle = col; y.fillText(s, a, b); };
   T('DRUNK', '64px "Press Start 2P"', '#ffc24a', 30, 230);
   T('BY ELI LIE', '24px "Press Start 2P"', '#f2ead8', 32, 316);
-  T('TIME', '20px "Press Start 2P"', '#c8c0e0', 32, 400); T(mmss(secs), '52px "Press Start 2P"', '#ffc24a', 32, 432);
-  T('DRINKS', '20px "Press Start 2P"', '#c8c0e0', 32, 530); T(String(st.drinks), '52px "Press Start 2P"', '#ff6a9a', 32, 562);
+  if (endName) { const words = endName.split(' '); const l1 = words.slice(0, Math.ceil(words.length / 2)).join(' '), l2 = words.slice(Math.ceil(words.length / 2)).join(' ');
+    T(l1, '17px "Press Start 2P"', '#ff6a9a', 32, 356); if (l2) T(l2, '17px "Press Start 2P"', '#ff6a9a', 32, 380); }
+  T('TIME', '20px "Press Start 2P"', '#c8c0e0', 32, 430); T(mmss(secs), '52px "Press Start 2P"', '#ffc24a', 32, 462);
+  T('DRINKS', '20px "Press Start 2P"', '#c8c0e0', 32, 560); T(String(st.drinks), '52px "Press Start 2P"', '#ff6a9a', 32, 592);
   y.font = '30px VT323'; y.fillStyle = '#1c1c24'; y.fillText('player.one', (sx + 15) * S, (sy + 2) * S + 4);
   y.font = '31px VT323'; y.fillStyle = '#1c1c24';
   let yy = wrap(y, cap, (sx + 3) * S, (sy + 133) * S, (sw - 6) * S, 30);
   y.font = '13px "Press Start 2P"'; y.fillStyle = '#b05a10'; y.fillText('TIME ' + mmss(secs) + '  DRINKS ' + st.drinks, (sx + 3) * S, yy + 6);
   y.font = '28px VT323'; y.fillStyle = '#3a5aa8'; y.fillText('#DrunkTheGame #EliLie', (sx + 3) * S, yy + 30);
   y.font = '13px "Press Start 2P"'; y.fillStyle = '#c8c0e0'; y.textAlign = 'center';
-  y.fillText('PLAY: ' + SITE.replace(/^https?:\/\//, ''), LW * S / 2, (py + ph + 7) * S);
+  y.fillStyle = '#ff6a9a'; y.fillText('HEAR "DRUNK" BY ELI LIE ON SPOTIFY, APPLE MUSIC + YOUTUBE', LW * S / 2, (py + ph + 6) * S);
+  y.fillStyle = '#c8c0e0'; y.fillText('PLAY: ' + SITE.replace(/^https?:\/\//, ''), LW * S / 2, (py + ph + 13) * S);
   const blob = await new Promise(r => c.toBlob(r, 'image/png'));
   return { url: c.toDataURL('image/png'), blob };
 }
@@ -1110,14 +1284,44 @@ $('rndBtn').onclick = () => { const r = n => Math.floor(Math.random() * n); Obje
 $('newBtn').onclick = () => { startMusic(); closeOv('title'); renderCreator(); openOv('creator'); };
 $('startBtn').onclick = () => {
   st.look = lookFrom(); closeOv('creator');
-  Object.assign(st, { mode: 'intro', courage: 1, buzz: 3, key: false, watched: false, porchOff: false, knocks: 0, played: 0, drinks: 0, cups: {}, cupN: 0, closetTried: false, spellSeen: false }); hud();
+  Object.assign(st, { mode: 'intro', courage: 1, buzz: 3, key: false, watched: false, porchOff: false, knocks: 0, played: 0, drinks: 0, cups: {}, cupN: 0, closetTried: false, spellSeen: false,
+    journal: [], cops: 0, water: false, backs: 0, outAt: 0, warned: false }); hud(); clearRun();
+  addJournal("Drunk and on my way home, call you just to say I'm coming over baby.");
   go('map', MAPSPAWN.home[0], MAPSPAWN.home[1]);
   const f = $('fade'); f.style.transition = 'none'; f.style.opacity = 1; f.innerHTML = '<span>"Drunk and on my way home,\ncall you just to say I\'m coming over baby."</span><span class="fattr">' + ATTR + '</span>'; st.lock = true;
   setTimeout(() => { f.style.transition = ''; startDrive('home', false, true); f.style.opacity = 0; }, 3600);
 };
 
+// ===== saving: a trip to Spotify (or a phone call) doesn't end your night =====
+const SAVE_KEYS = ['scene', 'x', 'y', 'courage', 'buzz', 'key', 'watched', 'porchOff', 'knocks', 'played', 'drinks', 'cups', 'cupN', 'closetTried', 'spellSeen', 'journal', 'cops', 'water', 'backs', 'warned'];
+function saveRun() {
+  if (st.mode !== 'play' || !st.look) return;
+  try { const o = { v: 1, look: st.look, cs: Object.assign({}, cs) }; SAVE_KEYS.forEach(k => o[k] = st[k]); localStorage.setItem('drunk_run', JSON.stringify(o)); } catch (_) {}
+}
+function clearRun() { try { localStorage.removeItem('drunk_run'); } catch (_) {} }
+function loadRun() { try { const o = JSON.parse(localStorage.getItem('drunk_run') || 'null'); return o && o.v === 1 && SC[o.scene] && o.played < GAME_SECONDS - 5 ? o : null; } catch (_) { return null; } }
+function showTitle() {
+  const o = loadRun(), c = $('contBtn');
+  c.style.display = o ? '' : 'none'; if (o) c.textContent = 'CONTINUE (' + mmss(GAME_SECONDS - o.played) + ' LEFT)';
+  $('newBtn').className = 'btn' + (o ? '' : ' hot'); openOv('title'); (o ? c : $('newBtn')).focus();
+}
+$('contBtn').onclick = () => {
+  const o = loadRun(); if (!o) return showTitle();
+  startMusic(); Object.assign(cs, o.cs || {}); st.look = o.look || lookFrom();
+  SAVE_KEYS.forEach(k => { if (o[k] !== undefined) st[k] = o[k]; });
+  st.journal = Array.isArray(st.journal) ? st.journal : []; st.cups = st.cups || {}; st.outAt = 0;
+  closeOv('title'); st.mode = 'play'; st.lock = false; const w = st.watched; go(o.scene, o.x, o.y); st.watched = w; hud();
+  say(['You come to. Same night, same mess. ' + mmss(GAME_SECONDS - st.played) + ' until last call.']);
+};
+function setComfort(on) {
+  comfort = on; document.body.classList.toggle('comfort', on); try { localStorage.setItem('drunk_comfort', on ? '1' : '0'); } catch (_) {}
+  const b = $('comfortBtn'); b.textContent = 'COMFORT MODE: ' + (on ? 'ON' : 'OFF'); b.setAttribute('aria-pressed', on);
+}
+$('comfortBtn').onclick = () => setComfort(!comfort);
+setComfort(comfort);
+
 // ===== audio =====
-let AC = null, master = null, musicOn = true, seqTimer = null, bgEl = null, jbEl = null, jbUntil = 0;
+let AC = null, master = null, musicOn = true, seqTimer = null, bgEl = null, jbEl = null, jbUntil = 0, pvEl = null;
 const NOTE = n => { if (!n) return 0; const m = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[n[0]] + (n[1] === '#' ? 1 : 0); const o = +n[n.length - 1]; return 440 * Math.pow(2, (m + 12 * (o + 1) - 69) / 12); };
 const BG = { bpm: 84, lead: 'A4 . C5 E5 D5 . C5 . A4 . G4 . E4 . . . F4 . A4 C5 B4 . A4 . G4 . E4 . A4 . . .'.split(' '), bass: 'A2 A2 F2 F2 C3 C3 E2 E2'.split(' ') };
 const JB = { bpm: 112, lead: 'E5 E5 D5 C5 A4 . C5 D5 E5 . G5 . E5 D5 C5 . A4 A4 G4 A4 C5 . D5 . C5 . A4 . . . . .'.split(' '), bass: 'A2 A2 C3 C3 F2 F2 E2 E2'.split(' ') };
@@ -1138,11 +1342,35 @@ function startMusic() {
   }, 60);
 }
 function stopMusic() { if (bgEl) bgEl.pause(); }
-function playJukebox() {
+function playJukebox() { // returns true when the real recording is playing
+  if (AUDIO.preview && musicOn) {
+    if (!pvEl) { pvEl = new Audio(AUDIO.preview); pvEl.addEventListener('ended', () => { if (bgEl && musicOn && !document.hidden) bgEl.play().catch(() => {}); }); }
+    if (bgEl) bgEl.pause(); pvEl.currentTime = 0; pvEl.play().catch(() => {}); return true;
+  }
   if (bgEl) { bgEl.currentTime = 0; if (musicOn) bgEl.play().catch(() => {}); }
   else jbUntil = performance.now() + 20000;
+  return false;
 }
+// ===== sound beds: murmur in the tavern, a crowd in the club, bass leaking out onto the street, crickets at her place =====
+let noiseSrc = null, noiseF = null, noiseG = null, ambBeat = 0;
+function ambTick() {
+  if (!AC || AC.state !== 'running') return;
+  const t = AC.currentTime, on = musicOn && ['play', 'curb', 'police'].includes(st.mode) && !(pvEl && !pvEl.paused);
+  const sc = on ? st.scene : '', bed = { tavern: [520, .05], club: [1100, .04] }[sc];
+  if (!noiseSrc) {
+    const b = AC.createBuffer(1, AC.sampleRate * 2, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    noiseSrc = AC.createBufferSource(); noiseSrc.buffer = b; noiseSrc.loop = true; noiseF = AC.createBiquadFilter(); noiseF.type = 'lowpass'; noiseG = AC.createGain(); noiseG.gain.value = 0;
+    noiseSrc.connect(noiseF); noiseF.connect(noiseG); noiseG.connect(master); noiseSrc.start();
+  }
+  noiseG.gain.setTargetAtTime(bed ? bed[1] * (.75 + Math.random() * .5) : 0, t, .4); if (bed) noiseF.frequency.setTargetAtTime(bed[0], t, .2);
+  if (sc === 'map') { const v = Math.max(0, 1 - Math.hypot(st.x - 221, st.y - 232) / 150) * .16;
+    if (ambBeat < t) ambBeat = t + .05; while (ambBeat < t + .3) { if (v > .01) tone(58, ambBeat, .16, 'sine', v); ambBeat += BEAT; } }
+  if (sc === 'exhouse' && Math.random() < .3) for (let i = 0; i < 3; i++) tone(4300 + Math.random() * 200, t + .05 + i * .06, .03, 'square', .012);
+}
+setInterval(ambTick, 250);
+function vib(p) { try { if (isPhone() && navigator.vibrate) navigator.vibrate(p); } catch (_) {} }
 function sfx(k) {
+  vib({ drink: 25, key: [30, 50, 30], crash: 220, blackout: 140, knock: [40, 80, 40, 80, 40] }[k] || 0);
   if (!AC || !musicOn) return; const t = AC.currentTime;
   if (k === 'drink') { tone(330, t, .08, 'square', .08); tone(440, t + .08, .08, 'square', .08); tone(660, t + .16, .15, 'square', .08); }
   if (k === 'key') { [523, 659, 784, 1046].forEach((f, i) => tone(f, t + i * .09, .2, 'square', .08)); }
@@ -1166,14 +1394,31 @@ function camTo(target, key, sh) {
   return Math.round(cam.y);
 }
 function fit() {
-  const b = document.body, phone = b.classList.contains('phone'), landPhone = phone && innerWidth > innerHeight;
-  b.classList.toggle('land', landPhone);
-  if (landPhone) { $('padL').prepend($('hud')); $('padRtop').append($('listenBtn'), $('hintBtn'), $('soundBtn')); }
-  else { $('screen').prepend($('hud')); $('hud').append($('soundBtn'), $('hintBtn'), $('listenBtn')); }
-  const HUD = landPhone ? 0 : 44, B = 8, ap = getComputedStyle($('app'));
+  const b = document.body, phone = b.classList.contains('phone'), landPhone = phone && innerWidth > innerHeight, port = phone && !landPhone;
+  const side = !phone && b.classList.contains('desk') && innerWidth >= 900 && innerWidth / innerHeight >= 1.25;
+  b.classList.toggle('land', landPhone); b.classList.toggle('port', port); b.classList.toggle('side', side);
+  const btns = [$('listenBtn'), $('hintBtn'), $('journalBtn'), $('soundBtn')];
+  if (landPhone || side) { $('padL').prepend($('hud')); $('padRtop').append(...btns); }
+  else if (port) { $('screen').prepend($('hud')); $('padM').append(...btns); }
+  else { $('screen').prepend($('hud')); $('hud').append(...btns.slice().reverse()); }
+  if (port) { if ($('dlg').parentNode !== $('dock')) $('dock').prepend($('dlg')); }
+  else if ($('dlg').parentNode !== $('screen')) $('hint').after($('dlg'));
+  const kb = !phone, lab = (t, k) => t + (kb ? '<small>' + k + '</small>' : '');
+  $('listenBtn').innerHTML = lab('LISTEN', 'L'); $('hintBtn').innerHTML = lab('HINT', 'H'); $('journalBtn').innerHTML = lab('LYRICS', 'J');
+  const B = 8, ap = getComputedStyle($('app')), HUD = (landPhone || side) ? 0 : ($('hud').offsetHeight || 40) + 4;
   const padX = parseFloat(ap.paddingLeft) + parseFloat(ap.paddingRight), padY = parseFloat(ap.paddingTop) + parseFloat(ap.paddingBottom);
   let s, vh = H;
-  if (landPhone) {
+  if (port) {
+    // full width; the text window and controls share what's left below
+    const ctrl = Math.max($('padL').offsetHeight, $('padR').offsetHeight, 140), dockMin = 118, gaps = 20;
+    s = (innerWidth - padX - B) / W;
+    const ah = innerHeight - padY - HUD - B - ctrl - dockMin - gaps;
+    vh = Math.min(H, Math.floor(ah / s));
+    if (vh < 150) { vh = 150; s = Math.max(.8, ah / 150); }
+  } else if (side) {
+    const aw = innerWidth - padX - $('padL').offsetWidth - $('padR').offsetWidth - 44 - B, ah = innerHeight - padY - B;
+    const f = Math.min(aw / W, ah / H); s = f >= 2 ? Math.floor(f) : f;
+  } else if (landPhone) {
     const aw = innerWidth - padX - $('padL').offsetWidth - $('padR').offsetWidth - 24 - B, ah = innerHeight - padY - B;
     s = aw / W; vh = Math.floor(ah / s);
     if (vh >= H) { vh = H; s = Math.min(aw / W, ah / H); }
@@ -1188,33 +1433,34 @@ function fit() {
   VH = vh;
   cv.style.width = W * s + 'px'; cv.style.height = vh * s + 'px';
   const sc = $('screen'); sc.style.width = W * s + B + 'px'; sc.style.setProperty('--s', s.toFixed(2)); sc.style.setProperty('--hudH', HUD + 'px');
-  if (!landPhone) $('loc').style.display = W * s < 520 ? 'none' : '';
-  $('soundBtn').textContent = (!landPhone && W * s < 420) ? (musicOn ? 'SND' : 'MUTE') : (musicOn ? 'SOUND ON' : 'SOUND OFF');
+  sc.style.setProperty('--s', s.toFixed(2)); $('app').style.setProperty('--s', s.toFixed(2));
+  if (!landPhone && !side && !port) $('loc').style.display = W * s < 600 ? 'none' : '';
+  $('soundBtn').textContent = (!landPhone && !side && !port && W * s < 470) ? (musicOn ? 'SND' : 'MUTE') : (musicOn ? 'SOUND ON' : 'SOUND OFF');
 }
+new MutationObserver(() => document.body.classList.toggle('talking', $('dlg').style.display === 'block')).observe($('dlg'), { attributes: true, attributeFilter: ['style'] });
 addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 250)); fit();
 // ===== landing =====
 function choose(mode) {
   document.body.classList.toggle('phone', mode === 'phone'); document.body.classList.toggle('desk', mode !== 'phone');
   try { localStorage.setItem('drunk_mode', mode); } catch (_) {}
   $('helpText').innerHTML = mode === 'phone'
-    ? 'Move: drag the pad on the left.<br>Talk, use and skip: the A button on the right, or tap the text box.<br><br>'
-    : 'Move: arrow keys or WASD.<br>Talk, use and skip: SPACE or ENTER.<br><br>';
-  $('helpText').innerHTML += 'Drinks give you Courage to do things, and Buzz. Buzz 5 means a blackout, and you won\'t pick where you wake up. Walking between places lowers Buzz by 1.<br><br>You have 6 minutes before last call. Find out what\'s in the closet.';
+    ? 'Move: drag the stick.<br>Talk, use and skip: the A button, or tap the text box.<br>Choices: tap the one you want.<br>LYRICS keeps every line of the song you find.<br><br>'
+    : 'Move: arrow keys or WASD.<br>Talk, use and skip: SPACE or ENTER.<br>Choices: arrow keys, then SPACE.<br>Shortcuts: L listen, H hint, J lyric journal, Esc close.<br><br>';
+  $('helpText').innerHTML += 'Drinks give you Courage to do things, and Buzz. Buzz 5 means a blackout, and you won\'t pick where you wake up. Walking between places lowers Buzz by 1.<br><br>You have 6 minutes before last call (the clock stops while you read). Find out what\'s in the closet.' + (mode === 'phone' ? '<br><br>iPhone: flip the ringer switch on to hear sound effects.' : '');
+  $('toast').textContent = mode === 'phone' ? 'STUCK? THE ANSWER IS IN THE LYRICS. TAP LISTEN.' : 'STUCK? THE ANSWER IS IN THE LYRICS. CLICK LISTEN (OR PRESS L).';
   $('saveTip').textContent = mode === 'phone' ? 'Press and hold the picture to save it to your photos.' : 'Right-click the picture to save or copy it.';
-  $('landing').style.display = 'none'; startMusic(); fit();
-  if (mode === 'phone') { try { const el = document.documentElement, p = el.requestFullscreen && el.requestFullscreen({ navigationUI: 'hide' });
-    if (p && p.then) p.then(() => screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {})).catch(() => {}); } catch (_) {} }
-  $('newBtn').focus();
+  $('landing').style.display = 'none'; startMusic(); fit(); setTimeout(fit, 60);
+  if (mode === 'phone') { try { const el = document.documentElement, p = el.requestFullscreen && el.requestFullscreen({ navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); } catch (_) {} }
+  showTitle();
 }
 { const standalone = (navigator.standalone === true) || matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches;
   if (!standalone && matchMedia('(pointer:coarse)').matches) $('hsTip').style.display = 'block'; }
 $('pickPhone').onclick = () => choose('phone'); $('pickDesk').onclick = () => choose('desk');
-$('uprightBtn').onclick = () => { document.body.classList.add('upright'); fit(); };
 { let pref = null; try { pref = localStorage.getItem('drunk_mode'); } catch (_) {}
   const guess = pref || (matchMedia('(pointer:coarse)').matches ? 'phone' : 'desk');
   $(guess === 'phone' ? 'pickPhone' : 'pickDesk').classList.add('rec');
   $(guess === 'phone' ? 'pickPhone' : 'pickDesk').insertAdjacentHTML('afterbegin', '<em>' + (pref ? 'LAST TIME' : 'BEST FOR THIS DEVICE') + '</em>'); }
-st.look = lookFrom(); hud(); openOv('title');
+st.look = lookFrom(); hud(); showTitle();
 requestAnimationFrame(loop);
 }
 </script>
