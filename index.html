@@ -329,6 +329,7 @@ body.side #keysLeg{display:block}
 <div class="pop box">
 <h3>HOW TO PLAY</h3>
 <div style="font-size:21px;line-height:1.1" id="helpText"></div>
+<div style="font-size:16px;line-height:1.15;opacity:.75;margin:8px 0 10px">This game keeps anonymous play stats (your city, where you came from, time spent in each place) to help make it better. No names, no emails.</div>
 <button class="btn hot" id="helpClose">GOT IT</button>
 </div>
 </div>
@@ -1462,7 +1463,9 @@ $('pickPhone').onclick = () => choose('phone'); $('pickDesk').onclick = () => ch
   $(guess === 'phone' ? 'pickPhone' : 'pickDesk').insertAdjacentHTML('afterbegin', '<em>' + (pref ? 'LAST TIME' : 'BEST FOR THIS DEVICE') + '</em>'); }
 st.look = lookFrom(); hud(); showTitle();
 requestAnimationFrame(loop);
+window.__drunk = { st }; // read by stats.js (anonymous play stats)
 }
 </script>
+<script src="stats.js"></script>
 </body>
 </html>
